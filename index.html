@@ -662,7 +662,7 @@ a:hover {
       <div class="item" id="btnPeta" aria-haspopup="true" aria-expanded="false">
         PETA <span class="arrow-down">▾</span>
         <div class="dropdown" role="menu" id="ddPeta">
-          <a href="map.html" role="menuitem">Peta Web <span>↗</span></a>
+          <a href="mapmapmap.html" role="menuitem">Peta Web <span>↗</span></a>
           <a href="#tematik" role="menuitem" data-scroll="#tematik">Peta Tematik <span>↓</span></a>
         </div>
       </div>
@@ -680,7 +680,7 @@ a:hover {
     <span class="sub">DAERAH ISTIMEWA YOGYAKARTA</span>
 
     <div class="spacer"></div>
-    <a class="cta" href="map.html" id="btnEksplor">
+    <a class="cta" href="mapmapmap.html" id="btnEksplor">
       EKSPLORASI PETA WEB  →
     </a>
   </div>
@@ -944,7 +944,7 @@ a:hover {
       // if "Peta Tematik" chosen from dropdown and has data-scroll
       const target = isLink.getAttribute('data-scroll');
       if(target){ e.preventDefault(); ddPeta.classList.remove('show'); smoothTo(target); }
-      return; // allow "Peta Web" to navigate to map.html
+      return; // allow "Peta Web" to navigate to mapmapmap.html
     }
     e.preventDefault();
     ddPeta.classList.toggle('show');
