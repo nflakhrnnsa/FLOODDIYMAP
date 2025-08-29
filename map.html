@@ -158,12 +158,23 @@ body.sidebar-collapsed #map{ left:0 !important; width:100% !important; }
 }
 
     /* Legend toggle (kanan atas map) */
-    .legend-panel{
-    position:absolute;top:200px;right:10px;z-index:1500;
-    background:var(--panel-bg);color:black;border-radius:12px;
-    padding:12px 12px 10px;width:240px;
-    box-shadow:0 6px 18px rgba(255, 255, 255, 0.35);
-  }
+    .legend-panel {
+  position: absolute;
+  top: 180px;
+  right: 10px;
+  z-index: 1500;
+  background: var(--panel-bg);
+  color: black;
+  border-radius: 12px;
+  padding: 12px 12px 10px;
+  width: 240px;
+  box-shadow: 0 6px 18px rgba(255, 255, 255, 0.35);
+
+  /* tambahan scroll */
+  max-height: 400px; /* sesuaikan tinggi maksimal yang mau terlihat */
+  overflow-y: auto;
+}
+
   .legend-item{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:14px}
   .swatch{width:12px;height:12px;border-radius:3px;border:1px solid rgba(255,255,255,.35);display:inline-block}
 
@@ -255,7 +266,7 @@ body.sidebar-collapsed #map{ left:0 !important; width:100% !important; }
       <input type="date" id="filter-end-date" class="date-input" value="2024-12-31"/>
     </div>
 
-    <select id="filter-kabupaten" class="form-select">
+    <select id="filter-Kabupaten" class="form-select">
       <option value="">Semua Kabupaten</option>
       <option value="BANTUL">Bantul</option>
       <option value="SLEMAN">Sleman</option>
@@ -348,6 +359,70 @@ body.sidebar-collapsed #map{ left:0 !important; width:100% !important; }
   <div class="legend-item"><span class="swatch" style="background:#e8bf1a"></span> Sedang</div>
   <div class="legend-item"><span class="swatch" style="background:#de1010"></span> Tinggi</div>
 
+   <!-- Lereng -->
+  <div class="legend-layer" id="legend-lereng">
+    <h4 class="legend-title">Kemiringan Lereng</h4>
+    <div class="legend-item"><span class="swatch" style="background:#206b23ff"></span> 0 - 8 % (Datar)</div>
+    <div class="legend-item"><span class="swatch" style="background:#87c554ff"></span> 8 - 15 % (Landai)</div>
+    <div class="legend-item"><span class="swatch" style="background:#e1e424ff"></span> 15 - 25 % (Agak Curam)</div>
+    <div class="legend-item"><span class="swatch" style="background:#cc8d04ff"></span> 25 - 40 % (Curam)</div>
+    <div class="legend-item"><span class="swatch" style="background:#e41515ff"></span> > 40 % (Sangat Curam)</div>
+  </div>
+
+  <!-- Guna Lahan -->
+  <div class="legend-layer" id="legend-gunalahan">
+    <h4 class="legend-title">Penggunaan Lahan</h4>
+    <div class="legend-item"><span class="swatch" style="background:#558de0ff"></span> Badan Air</div>
+    <div class="legend-item"><span class="swatch" style="background:#504a30ff"></span> Hutan Lahan Kering</div>
+    <div class="legend-item"><span class="swatch" style="background:#2a691aff"></span> Rumput Rawa</div>
+    <div class="legend-item"><span class="swatch" style="background:#1c664dff"></span> Tanaman Campuran</div>
+    <div class="legend-item"><span class="swatch" style="background:#caae33ff"></span> Permukiman</div>
+    <div class="legend-item"><span class="swatch" style="background:#815023ff"></span> Lahan Terbuka</div>
+    <div class="legend-item"><span class="swatch" style="background:#2c7834"></span> Padang Rumput</div>
+  </div>
+
+  <!-- Jenis Tanah -->
+  <div class="legend-layer" id="legend-jenistanah">
+    <h4 class="legend-title">Jenis Tanah</h4>
+    <div class="legend-item"><span class="swatch" style="background:#2c7834"></span> Luvisol</div>
+    <div class="legend-item"><span class="swatch" style="background:#d10e04"></span> Andosol</div>
+    <div class="legend-item"><span class="swatch" style="background:#bae655"></span> Litosol</div>
+    <div class="legend-item"><span class="swatch" style="background:#ede43e"></span> Gleisol</div>
+    <div class="legend-item"><span class="swatch" style="background:#ed963e"></span> Fluvisol</div>
+    <div class="legend-item"><span class="swatch" style="background:#d10e04"></span> Nitosol</div>
+    <div class="legend-item"><span class="swatch" style="background:#384a50ff"></span> Vertisol</div>
+  </div>
+
+  <!-- Jarak dari Sungai -->
+  <div class="legend-layer" id="legend-jarakdarisungai">
+    <h4 class="legend-title">Jarak dari Sungai</h4>
+    <div class="legend-item"><span class="swatch" style="background:#d10e04"></span> 0 - 50 m (Sangat Dekat)</div>
+    <div class="legend-item"><span class="swatch" style="background:#e9a21eff"></span> 50 - 100 m (Dekat)</div>
+    <div class="legend-item"><span class="swatch" style="background:#eee537ff"></span> 100 - 250 m (Sedang)</div>
+    <div class="legend-item"><span class="swatch" style="background:#37887dff"></span> 250 - 500 m (Jauh)</div>
+    <div class="legend-item"><span class="swatch" style="background:#1f207cff"></span> > 500 m (Sangat Jauh)</div>
+  </div>
+
+  <!-- Curah Hujan -->
+  <div class="legend-layer" id="legend-curahhujan">
+    <h4 class="legend-title">Curah Hujan</h4>
+    <div class="legend-item"><span class="swatch" style="background:#14147d"></span> > 1150 mm/th</div>
+    <div class="legend-item"><span class="swatch" style="background:#8a8ac4ff"></span> 850 - 950 mm/th</div>
+    <div class="legend-item"><span class="swatch" style="background:#3737b3"></span> 1050 - 1150 mm/th</div>
+    <div class="legend-item"><span class="swatch" style="background:#5050bf"></span> 950 - 1050 mm/th</div>
+    <div class="legend-item"><span class="swatch" style="background:#cfcfecff"></span> 0 - 850 mm/th</div>
+  </div>
+
+  <!-- Kerapatan Sungai -->
+  <div class="legend-layer" id="legend-kerapatansungai">
+    <h4 class="legend-title">Kerapatan Sungai</h4>
+    <div class="legend-item"><span class="swatch" style="background:#de1010"></span> <0,62 km/km²</div>
+    <div class="legend-item"><span class="swatch" style="background:#e99331ff"></span> 0,62 - 1,44 km/km²</div>
+    <div class="legend-item"><span class="swatch" style="background:#ebd067"></span> 1,44 - 2,27 km/km²</div>
+    <div class="legend-item"><span class="swatch" style="background:#4d967aff"></span> 2,27 - 3,10 km/km²</div>
+    <div class="legend-item"><span class="swatch" style="background:#14147d"></span> > 3,10 km/km²</div>
+  </div>
+
   <!-- Batas Administrasi -->
   <h4 class="legend-title">Batas Administrasi</h4>
   <div class="legend-item">
@@ -427,35 +502,35 @@ body.sidebar-collapsed #map{ left:0 !important; width:100% !important; }
     const kebanjirLayer = L.layerGroup().addTo(map);
     
 map.createPane('kebanjirPane');
-map.getPane('kebanjirPane').style.zIndex = 650;
+map.getPane('kebanjirPane').style.zIndex = 530;
 
 map.createPane('adminPane');
-map.getPane('adminPane').style.zIndex = 600;
+map.getPane('adminPane').style.zIndex = 520;
 
 map.createPane('kabupatenPane');
 // turunkan, jangan 5500
-map.getPane('kabupatenPane').style.zIndex = 590;
+map.getPane('kabupatenPane').style.zIndex = 510;
 
 map.createPane('bahayabanjirPane');
 map.getPane('bahayabanjirPane').style.zIndex = 500;
 
 map.createPane('curahhujanPane');
-map.getPane('curahhujanPane').style.zIndex = 450;
+map.getPane('curahhujanPane').style.zIndex = 500;
 
 map.createPane('jarakdarisungaiPane');
-map.getPane('jarakdarisungaiPane').style.zIndex = 400;
+map.getPane('jarakdarisungaiPane').style.zIndex = 500;
 
 map.createPane('gunalahanPane');
-map.getPane('gunalahanPane').style.zIndex = 350;
+map.getPane('gunalahanPane').style.zIndex = 500;
 
 map.createPane('kerapatansungaiPane');
-map.getPane('kerapatansungaiPane').style.zIndex = 300;
+map.getPane('kerapatansungaiPane').style.zIndex = 500;
 
 map.createPane('lerengPane');
-map.getPane('lerengPane').style.zIndex = 250;
+map.getPane('lerengPane').style.zIndex = 500;
 
 map.createPane('jenistanahPane');
-map.getPane('jenistanahPane').style.zIndex = 200;
+map.getPane('jenistanahPane').style.zIndex = 500;
 
 
 
@@ -753,7 +828,7 @@ fetch("admin.geojson")
         
       pointToLayer:(feature, latlng)=>{
         let c = '#ff0000';
-        const j = (feature.properties?.Jenis_Banj||'').toLowerCase();
+        const j = (feature.properties?.Jenis_Banjir||'').toLowerCase();
         if(j==='banjir luapan parit') c='#ff6600';
         else if(j==='banjir luapan sungai') c='#009933';
         else if(j==='banjir genangan') c='#ff0000';
@@ -799,24 +874,29 @@ const overlayLayers = {
     });
 
     document.querySelectorAll('.card input[type="checkbox"]').forEach(cb=>{
-      cb.addEventListener('change', e=>{
-        const id = e.target.id;
-        if(e.target.checked){ map.addLayer(overlayLayers[id]); }
-        else{ map.removeLayer(overlayLayers[id]); }
-      }); 
-    });
+  cb.addEventListener('change', e=>{
+    const id = e.target.id;
+    if(e.target.checked){
+      map.addLayer(overlayLayers[id]);
+    } else {
+      map.removeLayer(overlayLayers[id]);
+    }
+    updateLegend(); // update legend otomatis
+  });
+});
 
     // Thematic select (show only selected)
     const thematicSelect = document.getElementById('thematic-select');
-    thematicSelect.addEventListener('change', e=>{
-      const selected = e.target.value;
-       // hide semua layer dulu
+thematicSelect.addEventListener('change', e=>{
+  const selected = e.target.value;
+  // hide semua layer dulu
   Object.values(overlayLayers).forEach(layer => map.removeLayer(layer));
-  /// Nyalakan yang dipilih
+  // Nyalakan yang dipilih
   if(overlayLayers[selected]) {
     map.addLayer(overlayLayers[selected]);
     document.getElementById(selected).checked = true; // sync ke checkbox
   }
+  updateLegend(); // update legend otomatis
 });
 
     /* ================= THEME TOGGLE ================= */
@@ -916,6 +996,34 @@ sidebar.addEventListener('transitionend', ()=> map.invalidateSize());
     });
 
     /* ================= LEGEND PANEL ================= */
+    // Mapping legend ID ke overlay layer ID
+const legendMapping = {
+  bahayabanjir: null,   // legend umum, skip
+  kebanjir: null,
+  curahhujan: 'legend-curahhujan',
+  kerapatansungai: 'legend-kerapatansungai',
+  jarakdarisungai: 'legend-jarakdarisungai',
+  jenistanah: 'legend-jenistanah',
+  gunalahan: 'legend-gunalahan',
+  lereng: 'legend-lereng',
+  admin: null,
+  kabupaten: null
+};
+
+// Fungsi update legend
+function updateLegend() {
+  Object.keys(legendMapping).forEach(layerId => {
+    const legendId = legendMapping[layerId];
+    if (!legendId) return; // skip jika legend tidak ada
+    const legendElem = document.getElementById(legendId);
+    const layerCheckbox = document.getElementById(layerId);
+    if (layerCheckbox.checked && map.hasLayer(overlayLayers[layerId])) {
+      legendElem.classList.remove('hidden');
+    } else {
+      legendElem.classList.add('hidden');
+    }
+  });
+}
     const legendPanel = document.getElementById('legend-panel');
   const btnLegend  = document.getElementById('btn-legend');
 
@@ -1030,7 +1138,7 @@ function applyFilter(showAll = false) {
   const jenis = document.getElementById("filter-jenis").value;
   const startDate = document.getElementById("filter-start-date").value;
   const endDate = document.getElementById("filter-end-date").value;
-  const kabupaten = document.getElementById("filter-kabupaten").value;
+  const Kabupaten = document.getElementById("filter-Kabupaten").value;
 
   markers.forEach((item) => {
     const f = item.feature;
@@ -1041,18 +1149,18 @@ function applyFilter(showAll = false) {
       return;
     }
 
-    const matchJenis = !jenis || f.properties?.Jenis_Banj === jenis;
+    const matchJenis = !jenis || f.properties?.Jenis_Banjir === jenis;
 
     // tanggal
     let matchTanggal = true;
-    const fISO = toISO(f.properties?.Waktu_Keja);
+    const fISO = toISO(f.properties?.Waktu_Kejadian);
     if (startDate || endDate) {
       if (!fISO) matchTanggal = false;
       if (startDate && fISO < startDate) matchTanggal = false;
       if (endDate && fISO > endDate) matchTanggal = false;
     }
 
-    const matchKab = !kabupaten || f.properties?.Kabupaten_ === kabupaten;
+    const matchKab = !Kabupaten || f.properties?.Kabupaten === Kabupaten;
 
     if (matchJenis && matchTanggal && matchKab) {
       item.marker.addTo(kebanjirLayer);
@@ -1078,7 +1186,7 @@ document.getElementById("reset-filter").addEventListener("click", () => {
   document.getElementById("filter-jenis").value = "";
   document.getElementById("filter-start-date").value = "";
   document.getElementById("filter-end-date").value = "";
-  document.getElementById("filter-kabupaten").value = "";
+  document.getElementById("filter-Kabupaten").value = "";
 
   applyFilter(true); // true artinya tampilkan semua
 });
@@ -1097,14 +1205,14 @@ document.getElementById("reset-filter").addEventListener("click", () => {
       // count jenis
       const jenisCounts = {};
       (kebanjirData.features||[]).forEach(f=>{
-        const k = f.properties?.Jenis_Banj || 'Tidak diketahui';
+        const k = f.properties?.Jenis_Banjir || 'Tidak diketahui';
         jenisCounts[k] = (jenisCounts[k]||0)+1;
       });
 
       const monthNames = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
       const monthCounts = Array(12).fill(0);
       (kebanjirData.features||[]).forEach(f=>{
-        const d = new Date(f.properties?.Waktu_Keja);
+        const d = new Date(f.properties?.Waktu_Kejadian);
         if(!isNaN(d)){ monthCounts[d.getMonth()]++; }
       });
 
