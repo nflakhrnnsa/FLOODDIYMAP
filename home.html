@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PETA BENCANA BANJIR DIY — FLOODIYMAP</title>
+<style>
+  /* =========================
+     PALET & DASAR LAYOUT
+     ========================= */
+  :root{
+    --navy-900:#0b1f2e;     /* latar gelap utama */
+    --navy-800:#0f2a3d;     /* panel */
+    --navy-700:#12344b;     /* kartu */
+    --navy-600:#184963;     /* garis lembut */
+    --sky-300:#a7d4ff;      /* ikon langit */
+    --accent:#0ea5e9;       /* biru terang aksen */
+    --accent-2:#66e0ff;     /* biru neon untuk highlight */
+    --text:#eaf3fb;         /* teks utama */
+    --muted:#c8d7e3;        /* teks sekunder */
+    --pill:#0e2c42;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+    --radius-xl:20px;
+    --radius-lg:16px;
+    --radius-md:12px;
+    --radius-sm:10px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0; background:var(--navy-900); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif; line-height:1.5}
+  a{color:inherit; text-decoration:none}
+  img{display:block; max-width:100%; height:auto}
+
+  /* Preloader overlay */
+#preloader {
+  position: fixed;
+  inset: 0;
+  background: var(--navy-900);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5000;
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+
+/* Konten loader */
+.loader-content {
+  text-align: center;
+  position: relative;
+}
+
+.loader-logo {
+  height: 80px;
+  margin-bottom: 20px;
+  animation: float 2s ease-in-out infinite;
+}
+
+/* Efek gelombang air */
+.wave {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  width: 160px;
+  height: 160px;
+  margin-left: -80px;
+  border-radius: 43%;
+  background: rgba(14,165,233,0.25);
+  animation: wave 6s infinite linear;
+}
+
+.wave:nth-child(2) {
+  animation-delay: -3s;
+  opacity: 0.5;
+}
+
+@keyframes float {
+  0%,100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes wave {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Hidden state setelah loading */
+#preloader.hide {
+  opacity: 0;
+  visibility: hidden;
+}
+
+  /* =========================
+     HEADER STICKY
+     ========================= */
+  .header{
+    position:sticky; top:0; z-index:1000;
+    background:linear-gradient(180deg, rgba(5,15,25,.9),rgba(5,15,25,.75));
+    backdrop-filter: blur(6px);
+    border-bottom:1px solid rgba(255,255,255,.06);
+  }
+  .nav{
+    max-width:1200px; margin:0 auto; padding:10px 16px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+  }
+  .brand{
+    display:flex; align-items:center; gap:12px;
+  }
+  .brand img{height:36px; width:auto; filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}
+  .menu{
+    display:flex; align-items:center; gap:8px;
+  }
+  .menu .item{
+    position:relative;
+    padding:10px 18px;
+    background:var(--pill);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:999px;
+    font-weight:600;
+    letter-spacing:.3px;
+    cursor:pointer;
+    transition:transform .15s ease, box-shadow .15s ease, background .2s ease;
+  }
+  .menu .item:hover{ transform:translateY(-1px); box-shadow:0 8px 18px rgba(0,0,0,.25)}
+  .menu .item.active{ outline:2px solid rgba(102,224,255,.25)}
+
+  /* Dropdown PETA */
+  .dropdown{
+    position:absolute; right:0; top:calc(100% + 10px);
+    background:var(--navy-800);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:16px;
+    padding:8px; width:220px;
+    box-shadow:var(--shadow);
+    display:none;
+  }
+  .dropdown.show{display:block; animation:pop .14s ease-out}
+  .dropdown a{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 12px; border-radius:12px; color:var(--muted); font-weight:600;
+  }
+  .dropdown a:hover{background:rgba(255,255,255,.06); color:var(--text)}
+  @keyframes pop{from{transform:translateY(-6px); opacity:0} to{transform:none; opacity:1}}
+
+  /* =========================
+     HERO
+     ========================= */
+  .hero{
+    position:relative; min-height:62vh; display:flex; align-items:flex-end;
+    background:
+      linear-gradient(180deg, rgba(4,12,20,.10) 0%, rgba(4,12,20,.55) 35%, rgba(4,12,20,.9) 100%),
+      url('FOTOBANJIR.jpeg') center/cover no-repeat;
+  }
+  .hero-inner{
+    max-width:1200px; margin:0 auto; padding:90px 16px 38px 16px; width:100%;
+  }
+  .hero h1{
+    font-size: clamp(36px, 7.2vw, 82px);
+    line-height:1; margin:0 0 10px 0; font-weight:900; letter-spacing:1px;
+    text-transform:uppercase;
+    text-shadow:0 4px 20px rgba(0,0,0,.55);
+  }
+  .hero .sub{
+    display:block; font-weight:800; letter-spacing:.5px;
+    color:#e35539; text-transform:uppercase; margin-top:10px;
+  }
+  .hero .cta{
+    margin-top:20px;
+    display:inline-flex; align-items:center; gap:10px;
+    padding:16px 26px; border-radius:999px; font-weight:800; letter-spacing:.7px;
+    background:linear-gradient(90deg, var(--accent), var(--accent-2));
+    color:#001521;
+    border:none; cursor:pointer;
+    box-shadow:0 10px 28px rgba(0,208,255,.25), inset 0 0 0 2px rgba(255,255,255,.2);
+    transform:translateY(0);
+    transition:transform .18s ease, box-shadow .18s ease, filter .18s ease;
+  }
+  .hero .cta:hover{ transform:translateY(-2px); filter:saturate(1.05); box-shadow:0 14px 34px rgba(0,208,255,.35)}
+  .hero .cta:active{ transform:translateY(0)}
+
+  /* animasi text reveal */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero h1 {
+  animation: fadeUp 1s ease-out forwards;
+}
+
+.hero .sub {
+  animation: fadeUp 1s ease-out forwards;
+  animation-delay: 0.4s; /* muncul setelah judul */
+  opacity: 0;
+}
+/* Pulse lembut */
+.hero .cta {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero .cta::before {
+  content: "";
+  position: absolute;
+  top: -2px; left: -2px; right: -2px; bottom: -2px;
+  border-radius: 999px;
+  border: 2px solid var(--accent-2);
+  opacity: 0.6;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%   { transform: scale(1); opacity: 0.6; }
+  50%  { transform: scale(1.15); opacity: 0; }
+  100% { transform: scale(1); opacity: 0.6; }
+}
+
+/* Cahaya border bergerak */
+.hero .cta::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  padding: 2px;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.8), transparent);
+  background-size: 200% 100%;
+  animation: shine 3s linear infinite;
+  -webkit-mask: 
+     linear-gradient(#fff 0 0) content-box, 
+     linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+}
+
+@keyframes shine {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Scroll Progress Bar */
+#progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 4px;                /* ketebalan */
+  background: linear-gradient(90deg, #66e0ff, #0ea5e9);
+  width: 0%;
+  z-index: 3000;              /* selalu di atas header */
+  box-shadow: 0 0 10px rgba(14,165,233,0.8);
+  transition: width 0.1s ease;
+}
+
+  /* =========================
+     SECTIONS WRAPPER
+     ========================= */
+  .section{padding:40px 16px}
+  .container{max-width:1200px; margin:0 auto}
+
+  /* Judul section */
+  .title{
+    margin:12px 0 8px 0;
+    padding:16px 22px;
+    background:linear-gradient(180deg, #071826, #0c2536);
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:var(--radius-xl);
+    box-shadow:var(--shadow);
+    text-align:center;
+  }
+  .title h2{
+    margin:0; font-size: clamp(22px, 3.2vw, 36px); letter-spacing:.6px; font-weight:900;
+  }
+  .title p{
+    margin:6px 0 0 0; color:var(--muted); font-weight:600
+  }
+
+  /* =========================
+     GRID KARTU PETA (8)
+     ========================= */
+  .grid{
+    display:grid; gap:18px; margin-top:18px;
+    grid-template-columns: repeat(4, 1fr);
+  }
+  @media (max-width:1000px){ .grid{grid-template-columns: repeat(3,1fr)} }
+  @media (max-width:720px){ .grid{grid-template-columns: repeat(2,1fr)} }
+  @media (max-width:480px){ .grid{grid-template-columns: 1fr} }
+
+  .card{
+    background:linear-gradient(180deg, #0f2a3d, #0c2232);
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:18px; overflow:hidden;
+    box-shadow:0 10px 24px rgba(0,0,0,.25);
+    transform:translateY(22px); opacity:0;
+    transition:transform .6s cubic-bezier(.2,.75,.2,1), opacity .6s ease, box-shadow .2s ease, translate .2s ease;
+  }
+  .card.inview{ transform:translateY(0); opacity:1 }
+  .card:hover{ box-shadow:0 14px 30px rgba(0,0,0,.33) }
+
+  .thumb{
+    aspect-ratio: 16/11;
+    background: #0a1c29;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+  .thumb img{
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* jaga proporsi gambar */
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    filter: drop-shadow(0 4px 10px rgba(0,0,0,.35));
+}
+  .card-body{padding:12px 12px 14px 12px}
+  .card h3{
+    margin:6px 6px 10px 6px; font-size:16px; font-weight:800; letter-spacing:.3px;
+  }
+  .pill{
+    margin:0 6px 4px 6px; display:inline-flex; align-items:center; gap:8px;
+    padding:9px 14px; border-radius:999px;
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.08);
+    font-weight:800; color:var(--muted); cursor:pointer;
+    transition:transform .15s ease, background .2s ease, box-shadow .15s ease;
+  }
+  .pill:hover{ transform:translateY(-1px); background:rgba(255,255,255,.1); color:var(--text)}
+  /* Hover interaktif kartu */
+.card {
+  perspective: 1000px; /* aktifkan perspektif 3D */
+}
+
+.card:hover {
+  transform: translateY(-6px) scale(1.02) rotateX(4deg) rotateY(-4deg);
+  box-shadow: 0 18px 40px rgba(0,0,0,.45);
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+/* =========================
+   MODAL/POP-UP UNTUK GAMBAR FULL
+   ========================= */
+#modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw; /* Lebar penuh viewport */
+  height: 100vh; /* Tinggi penuh viewport */
+  background: rgba(0, 0, 0, 0.85); /* Latar belakang gelap */
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+#modal.show {
+  display: flex;
+}
+
+.modal-content {
+  background: #0f2a3d;
+  border-radius: 12px;
+  width: 90vw; /* Lebar relatif terhadap viewport */
+  max-width: 100%; /* Hapus batas maksimum untuk fleksibilitas */
+  height: auto; /* Tinggi menyesuaikan konten */
+  max-height: 95vh; /* Batas tinggi sedikit lebih longgar */
+  overflow: auto; /* Izinkan scroll jika perlu */
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  position: relative;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#modalImg {
+  width: 100%; /* Isi lebar container */
+  height: auto; /* Tinggi menyesuaikan proporsi asli */
+  object-fit: contain; /* Jaga proporsi tanpa crop */
+  display: block;
+  border-radius: 8px;
+  max-width: 100%; /* Pastikan tidak melebihi container */
+}
+
+#modaltitle {
+  color: white;
+  text-align: center;
+  margin: 10px 0;
+  font-size: clamp(16px, 2vw, 18px);
+  font-weight: 600;
+}
+
+#btnClose {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  font-size: clamp(20px, 2vw, 24px);
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 50%;
+}
+
+/* Media Queries untuk Responsivitas */
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95vw;
+    max-height: 90vh;
+    padding: 5px;
+  }
+  #modaltitle {
+    font-size: clamp(14px, 2vw, 16px);
+  }
+  #btnClose {
+    top: 5px;
+    right: 5px;
+    font-size: clamp(18px, 2vw, 20px);
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-content {
+    width: 98vw;
+    max-height: 85vh;
+    padding: 3px;
+  }
+  #modaltitle {
+    font-size: clamp(12px, 2vw, 14px);
+  }
+  #btnClose {
+    top: 3px;
+    right: 3px;
+    font-size: clamp(16px, 2vw, 18px);
+  }
+}
+
+  /* =========================
+     INFORMASI MITIGASI
+     ========================= */
+  .info-box{
+    background:linear-gradient(180deg, #0e2840, #0b2133);
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:18px; padding:14px; box-shadow:var(--shadow);
+  }
+  .info-row{
+    display:flex; flex-direction:column; gap:14px;
+  }
+  .info-note{
+    background:rgba(255,255,255,.05);
+    border:1px dashed rgba(255,255,255,.15);
+    border-radius:14px; padding:12px 14px; color:var(--muted); font-weight:600;
+  }
+  .btn-more{
+    align-self:flex-end;
+    display:inline-flex; align-items:center; gap:8px; padding:10px 16px; border-radius:999px;
+    background:rgba(255,255,255,.08); color:var(--text); font-weight:800;
+    border:1px solid rgba(255,255,255,.12);
+    transition:transform .15s ease, background .2s ease;
+  }
+  .btn-more:hover{ transform:translateY(-1px); background:rgba(255,255,255,.14)}
+
+  /* =========================
+     FAQ / ACCORDION
+     ========================= */
+  .faq-wrap{display:flex; flex-direction:column; gap:14px}
+  .faq{
+    background:linear-gradient(180deg, #0f2b41, #0b2133);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:16px; overflow:hidden;
+  }
+  .faq-sum{
+    margin:0; padding:16px 16px; display:flex; align-items:center; justify-content:space-between; cursor:pointer;
+    font-weight:900; letter-spacing:.2px;
+  }
+  .faq-sum .arrow{transition:transform .2s ease}
+  .faq.open .arrow{transform:rotate(180deg)}
+  .faq-content{
+    display:none; padding:0 16px 14px 16px; color:var(--muted); font-weight:600;
+  }
+  .faq.open .faq-content{display:block}
+
+  /* =========================
+     KONTAK GRID
+     ========================= */
+  .contact-grid{
+    display:grid; gap:16px; margin-top:16px;
+    grid-template-columns: repeat(3,1fr);
+  }
+  @media (max-width:900px){ .contact-grid{grid-template-columns: repeat(2,1fr)} }
+  @media (max-width:560px){ .contact-grid{grid-template-columns: 1fr} }
+
+  .contact{
+    background:linear-gradient(180deg, #0e2840, #0b2133);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:18px; padding:18px; box-shadow:var(--shadow);
+    display:flex; flex-direction:column; gap:8px;
+  }
+  .contact h4{margin:0; font-size:18px}
+  .contact .muted{color:var(--muted); font-weight:600}
+
+  /* =========================
+     FOOTER
+     ========================= */
+  footer{
+    border-top:1px solid rgba(255,255,255,.08);
+    margin-top:28px; padding:18px 16px 28px 16px;
+    color:var(--muted);
+  }
+  .foot-logos{
+    display:flex; flex-wrap:wrap; gap:16px; align-items:center; justify-content:space-between;
+    max-width:1200px; margin:0 auto 12px auto;
+  }
+  .foot-logos .col{
+    display: grid;
+    grid-template-columns: auto 1fr;  /* logo kiri, teks kanan */
+    align-items: start;               /* logo sejajar atas (teks bold) */
+    gap: 12px;
+    flex: 1 1 260px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 16px;
+    padding: 12px;
+  }
+  .foot-logos .col img {
+    height: 36px;   /* perbesar biar sejajar */
+    margin-top: 2px; /* opsional biar lebih presisi */
+}
+/* Copyright */
+.copyright{
+  flex: 1 1 100%;   /* bikin full baris di bawah */
+  width: 100%;      /* pastikan penuh */
+  text-align: center;
+  font-weight: 700;
+  margin-top: 12px; /* biar agak ada jarak dari logo */
+}
+footer {
+  position: relative; /* supaya ::before bisa nempel */
+  border-top: none;   /* matikan border lama */
+  margin-top: 28px;
+  padding: 18px 16px 28px 16px;
+  color: var(--muted);
+}
+
+footer::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;  /* ketebalan garis */
+  background: linear-gradient(90deg, #66e0ff, #0ea5e9, #0b1f2e);
+  box-shadow: 0 0 12px rgba(14,165,233,0.8); /* glow */
+}
+.foot-logos .col img {
+  height: 36px;
+  transition: transform 0.4s ease, filter 0.4s ease;
+}
+
+.foot-logos .col img:hover {
+  transform: rotate(-5deg) scale(1.1); /* sedikit putar + perbesar */
+  filter: drop-shadow(0 0 12px var(--accent-2)); /* glow biru */
+}
+
+  /* =========================
+     MODAL / POPUP GAMBAR PETA
+     ========================= */
+  .modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  place-items: center;
+  background: rgba(0,0,0,0.85);
+  z-index: 2000;
+  padding: 20px;
+}
+.modal.show { display: grid; animation: fadeIn .15s ease; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+.modal-box {
+  width: min(1200px, 95vw);
+  max-height: 90vh;
+  background: #0f2a3d;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: #0b2133;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+}
+.modal-head h5 { margin: 0; font-size: 18px; color: #fff; }
+.btn-x {
+  background: rgba(255,255,255,.1);
+  border: none;
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+.modal-body {
+  padding: 10px;
+  background: #081c2a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.modal-body img {
+  max-width: 100%;
+  max-height: 75vh; /* biar nggak melebihi layar */
+  object-fit: contain; /* jaga proporsi tanpa crop */
+  border-radius: 6px;
+}
+  /* Link */
+  .a, .menu .item, .pill, .btn-more {
+  transition: color 0.3s ease, background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.menu .item:hover {
+  background: rgba(14,165,233,0.15);
+  color: var(--accent-2);
+}
+a:hover {
+  color: var(--accent);
+}
+
+  /* =========================
+     UTIL
+     ========================= */
+  .sr{position:absolute; left:-9999px}
+  .spacer{height:24px}
+  .arrow-down{display:inline-block; transform:translateY(1px)}
+  .narrow{max-width:900px; margin:0 auto}
+</style>
+</head>
+<body>
+
+  <div id="preloader">
+  <div class="loader-content">
+    <img src="Logo Floodiymap.png" alt="FLOODIYMAP Logo" class="loader-logo">
+    <div class="wave"></div>
+    <div class="wave"></div>
+  </div>
+</div>
+  <div id="progress-bar"></div>
+<!-- ========================= HEADER ========================= -->
+<header class="header" id="top">
+  <nav class="nav">
+    <div class="brand" aria-label="Logo">
+      <img src="Logo UPN.png" alt="Logo UPN Veteran Yogyakarta">
+      <img src="Logo BPBD DIY.png" alt="Logo BPBD DIY">
+      <img src="Logo FLOODIYMAP.png" alt="Logo FLOODIYMAP">
+    </div>
+
+    <div class="menu">
+      <a class="item active" data-goto="#hero" href="#hero">BERANDA</a>
+
+      <div class="item" id="btnPeta" aria-haspopup="true" aria-expanded="false">
+        PETA <span class="arrow-down">▾</span>
+        <div class="dropdown" role="menu" id="ddPeta">
+          <a href="map.html" role="menuitem">Peta Web <span>↗</span></a>
+          <a href="#tematik" role="menuitem" data-scroll="#tematik">Peta Tematik <span>↓</span></a>
+        </div>
+      </div>
+
+      <a class="item" data-goto="#informasi" href="#informasi">INFORMASI</a>
+      <a class="item" data-goto="#kontak" href="#kontak">KONTAK</a>
+    </div>
+  </nav>
+</header>
+
+<!-- ========================= HERO ========================= -->
+<section class="hero" id="hero" aria-label="Beranda">
+  <div class="hero-inner">
+    <h1>PETA<br/>BENCANA<br/>BANJIR</h1>
+    <span class="sub">DAERAH ISTIMEWA YOGYAKARTA</span>
+
+    <div class="spacer"></div>
+    <a class="cta" href="map.html" id="btnEksplor">
+      EKSPLORASI PETA WEB  →
+    </a>
+  </div>
+</section>
+
+<!-- ========================= PETA TEMATIK ========================= -->
+<section class="section" id="tematik">
+  <div class="container">
+    <div class="title">
+      <h2>PETA BENCANA BANJIR DIY</h2>
+      <p>Peta bahaya banjir, peta persebaran kejadian banjir 2024, serta peta parameter banjir Daerah Istimewa Yogyakarta (DIY)</p>
+    </div>
+
+    <div class="grid" id="gridPeta">
+      <!-- 1 -->
+      <article class="card">
+        <div class="thumb"><img src="tumb banjir.png" alt=""></div>
+        <div class="card-body">
+          <h3>Peta Bahaya Banjir DIY</h3>
+          <button class="pill" data-map="peta banjir.jpg" data-title="Peta Bahaya Banjir DIY">Lihat Peta  →</button>
+        </div>
+      </article>
+      <!-- 2 -->
+      <article class="card">
+        <div class="thumb"><img src="tumb kebanjir.png" alt=""></div>
+        <div class="card-body">
+          <h3>Peta Kejadian Banjir DIY</h3>
+          <button class="pill" data-map="peta kebanjir.jpg" data-title="Peta Kejadian Banjir DIY">Lihat Peta  →</button>
+        </div>
+      </article>
+      <!-- 3 -->
+      <article class="card">
+        <div class="thumb"><img src="tumb ch new.png" alt=""></div>
+        <div class="card-body">
+          <h3>Peta Curah Hujan DIY</h3>
+          <button class="pill" data-map="peta ch new.jpg" data-title="Peta Curah Hujan DIY">Lihat Peta  →</button>
+        </div>
+      </article>
+      <!-- 4 -->
+      <article class="card">
+        <div class="thumb"><img src="tumb jas.png" alt=""></div>
+        <div class="card-body">
+          <h3>Peta Jarak dari Sungai DIY</h3>
+          <button class="pill" data-map="peta jas.jpg" data-title="Peta Jarak dari Sungai DIY">Lihat Peta  →</button>
+        </div>
+      </article>
+      <!-- 5 -->
+      <article class="card">
+        <div class="thumb"><img src="tumb pl.png" alt=""></div>
+        <div class="card-body">
+          <h3>Peta Penggunaan Lahan DIY</h3>
+          <button class="pill" data-map="peta pl.jpg" data-title="Peta Penggunaan Lahan DIY">Lihat Peta  →</button>
+        </div>
+      </article>
+      <!-- 6 -->
+      <article class="card">
+        <div class="thumb"><img src="tumb ks.png" alt=""></div>
+        <div class="card-body">
+          <h3>Peta Kerapatan Sungai DIY</h3>
+          <button class="pill" data-map="peta ks.jpg" data-title="Peta Kerapatan Sungai DIY">Lihat Peta  →</button>
+        </div>
+      </article>
+      <!-- 7 -->
+      <article class="card">
+        <div class="thumb"><img src="tumb kl.png" alt=""></div>
+        <div class="card-body">
+          <h3>Peta Kemiringan Lereng DIY</h3>
+          <button class="pill" data-map="peta kl.jpg" data-title="Peta Kemiringan Lereng DIY">Lihat Peta  →</button>
+        </div>
+      </article>
+      <!-- 8 -->
+      <article class="card">
+        <div class="thumb"><img src="tumb jt.png" alt=""></div>
+        <div class="card-body">
+          <h3>Peta Jenis Tanah DIY</h3>
+          <button class="pill" data-map="peta jt.jpg" data-title="Peta Jenis Tanah DIY">Lihat Peta  →</button>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= INFORMASI ========================= -->
+<section class="section" id="informasi">
+  <div class="container">
+    <div class="title">
+      <h2>INFORMASI MITIGASI BENCANA BANJIR</h2>
+      <p>Tips mitigasi bencana banjir menurut BPBD DIY</p>
+    </div>
+
+    <div class="info-box">
+      <div class="info-row">
+        <div class="info-note">
+          Banjir merupakan peristiwa ketika air menggenangi suatu wilayah yang biasanya tidak di genangi air dalam jangka waktu tertentu. Kejadian bencana banjir sangat bersifat lokal, artinya bisa saja satu daerah terlanda banjur dan daerah lainnya aman dari banjir. Oleh sebab itu, langkah antisipasi harus di lakukan baik sebelum, saat dan pasca bencana banjir (BPBD DIY, 2019)...
+        </div>
+        <a class="btn-more" href="http://bpbd.jogjaprov.go.id/tips-bencana-banjir" target="_blank" rel="noopener">Baca Selengkapnya →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= FAQ ========================= -->
+<section class="section" id="faq">
+  <div class="container">
+    <div class="title">
+      <h2>PERTANYAAN SEPUTAR SISTEM BENCANA BANJIR</h2>
+      <p>Temukan jawaban atas pertanyaan umum tentang sistem peringatan dini dan peta interaktif bencana</p>
+    </div>
+
+    <div class="faq-wrap narrow">
+      <div class="faq">
+        <div class="faq-sum">
+          <span>Apa itu Sistem Peta Bencana DIY?</span>
+          <span class="arrow">▲</span>
+        </div>
+        <div class="faq-content">
+          Sistem informasi geografis berbasis web untuk monitoring, analisis, dan visualisasi data bencana banjir di Daerah Istimewa Yogyakarta. Dikembangkan melalui kolaborasi Teknik Geomatika UPN “Veteran” Yogyakarta dan BPBD DIY untuk mendukung mitigasi dan penanggulangan bencana.
+        </div>
+      </div>
+
+      <div class="faq">
+        <div class="faq-sum">
+          <span>Bagaimana cara menggunakan peta interaktif?</span>
+          <span class="arrow">▲</span>
+        </div>
+        <div class="faq-content">
+          Pilih jenis peta yang ingin dilihat dari kategori tersedia, kemudian gunakan kontrol layer untuk menampilkan/menyembunyikan informasi tertentu. Anda dapat mengubah basemap, mencari lokasi spesifik, dan mengklik area untuk melihat detail informasi bencana.
+        </div>
+      </div>
+
+      <div class="faq">
+        <div class="faq-sum">
+          <span>Bagaimana melaporkan kejadian bencana?</span>
+          <span class="arrow">▲</span>
+        </div>
+        <div class="faq-content">
+          Laporkan kejadian bencana ke BPBD DIY melalui Telp, Whatsapp, Fax, Email, atau website/aplikasi PAMOR Mobile. Sertakan lokasi, jenis bencana, spesifikasi, kronologi, dampak, tingkat kerusakan, dan foto jika memungkinkan untuk verifikasi data.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= KONTAK ========================= -->
+<section class="section" id="kontak">
+  <div class="container">
+    <div class="title">
+      <h2>KONTAK ADUAN KEJADIAN BANJIR DIY</h2>
+      <p>Hubungi BPBD DIY untuk pelaporan bencana atau informasi lebih lanjut</p>
+    </div>
+
+    <div class="contact-grid">
+      <div class="contact">
+        <h4>Telepon</h4>
+        <div class="muted">(0274)555585<br/>atau<br/>(0274) 555584</div>
+        <div>24 jam siaga bencana</div>
+      </div>
+      <div class="contact">
+        <h4>Whatsapp</h4>
+        <div class="muted">0274555584</div>
+        <div>24 jam siaga bencana</div>
+      </div>
+      <div class="contact">
+        <h4>Fax</h4>
+        <div class="muted">(0274)555326</div>
+        <div>24 jam siaga bencana</div>
+      </div>
+      <div class="contact">
+        <h4>Email</h4>
+        <div class="muted">pusdalopsdiy@gmail.com</div>
+        <div>Laporan tertulis bencana</div>
+      </div>
+      <div class="contact">
+        <h4>Lokasi</h4>
+        <div class="muted">BPBD DIY Jalan Kenari<br/>No. 14A, Semaki, Umbulharjo<br/>Yogyakarta, 55166</div>
+      </div>
+      <div class="contact">
+        <h4>Website/Aplikasi</h4>
+        <div class="muted"><a href="https://pamor.jogjaprov.go.id/kontak/" target="_blank" rel="noopener">https://pamor.jogjaprov.go.id/kontak/</a></div>
+        <div>PAMOR Mobile</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= FOOTER ========================= -->
+<footer>
+  <div class="foot-logos">
+    <div class="col">
+      <img src="Logo UPN.png" alt="">
+      <div>
+        <strong>UPN “Veteran” Yogyakarta</strong><br/>
+        Fakultas Teknologi Mineral dan Energi<br/>
+        Teknik Geomatika<br/><br/>
+        Jl. Padjajaran, Sleman, Yogyakarta, Indonesia. 55283<br/><br/>
+        email : info@upnyk.ac.id
+      </div>
+    </div>
+    <div class="col">
+      <img src="Logo BPBD DIY.png" alt="">
+      <div>
+        <strong>BPBD DIY</strong><br/>
+        Badan Penanggulangan Bencana Daerah<br/><br/>
+        Jalan Kenari No. 14A, Semaki, Umbulharjo, Yogyakarta, 55166<br/><br/>
+        email : BPBD@jogjaprov.go.id
+      </div>
+    </div>
+    <div class="col">
+      <img src="Logo FLOODIYMAP.png" alt="">
+      <div>
+        <strong>FLOODIYMAP</strong><br/>
+        Flood Daerah Istimewa Yogyakarta Map<br/><br/>
+        Proyek ini dibuat oleh Mahasiswa Program Studi Teknik Geomatika UPN “Veteran” Yogyakarta<br/><br/>
+        email : 117220010@student.upnyk.ac.id
+
+      </div>
+    </div>
+  </div>
+  <div class="copyright">Copyright © 2025 FLOODIYMAP</div>
+</footer>
+
+<!-- ========================= MODAL ========================= -->
+<div id="modal" class="modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h5 id="modaltitle">Judul Peta</h5>
+      <button id="btnClose" class="btn-x">&times;</button>
+    </div>
+    <div class="modal-body">
+      <img id="modalImg" src="" alt="Peta">
+    </div>
+  </div>
+</div>
+
+<script>
+  // =========================
+  // Helper: smooth scroll (offset header)
+  // =========================
+  const header = document.querySelector('.header');
+  function smoothTo(hash){
+    const el = document.querySelector(hash);
+    if(!el) return;
+    const rect = el.getBoundingClientRect();
+    const top = window.scrollY + rect.top - (header.offsetHeight + 10);
+    window.scrollTo({top, behavior:'smooth'});
+  }
+
+  // menu anchor
+  document.querySelectorAll('[data-goto]').forEach(a=>{
+    a.addEventListener('click', (e)=>{ e.preventDefault(); smoothTo(a.getAttribute('data-goto')); });
+  });
+
+  // =========================
+  // Dropdown PETA
+  // =========================
+  const btnPeta = document.getElementById('btnPeta');
+  const ddPeta = document.getElementById('ddPeta');
+  btnPeta.addEventListener('click', (e)=>{
+    const isLink = e.target.closest('a');
+    if(isLink){
+      // if "Peta Tematik" chosen from dropdown and has data-scroll
+      const target = isLink.getAttribute('data-scroll');
+      if(target){ e.preventDefault(); ddPeta.classList.remove('show'); smoothTo(target); }
+      return; // allow "Peta Web" to navigate to map.html
+    }
+    e.preventDefault();
+    ddPeta.classList.toggle('show');
+  });
+  document.addEventListener('click', (e)=>{
+    if(!btnPeta.contains(e.target)) ddPeta.classList.remove('show');
+  });
+
+  // =========================
+  // Hero CTA hover micro-move
+  // =========================
+  const cta = document.getElementById('btnEksplor');
+  cta.addEventListener('mousemove', (e)=>{
+    const r = cta.getBoundingClientRect();
+    const x = (e.clientX - r.left - r.width/2)/r.width;
+    const y = (e.clientY - r.top - r.height/2)/r.height;
+    cta.style.transform = `translateY(${(-2*y).toFixed(1)}px) translateX(${(2*x).toFixed(1)}px)`;
+  });
+  cta.addEventListener('mouseleave', ()=>{ cta.style.transform='translateY(0)' });
+
+  // =========================
+  // IntersectionObserver: kartu muncul dari bawah
+  // =========================
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(en=>{ if(en.isIntersecting) en.target.classList.add('inview'); });
+  }, {threshold:.2});
+  document.querySelectorAll('.card').forEach(c=>io.observe(c));
+
+  // =========================
+  // Modal Gambar Peta
+  // =========================
+  const modal = document.getElementById('modal');
+  const modalImg = document.getElementById('modalImg');
+  const modalTitle = document.getElementById('modaltitle');
+  const btnClose = document.getElementById('btnClose');
+
+  document.querySelectorAll('.pill[data-map]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      modalImg.src = btn.getAttribute('data-map');
+      modalTitle.textContent = btn.getAttribute('data-title') || 'Peta';
+      modal.classList.add('show');
+      document.body.style.overflow='hidden';
+    });
+  });
+  function closeModal(){
+    modal.classList.remove('show');
+    document.body.style.overflow='';
+    // Avoid showing previous image flash during animation
+    setTimeout(()=>{ modalImg.src=''; },150);
+  }
+  btnClose.addEventListener('click', closeModal);
+modal.addEventListener('click', e=>{ if(e.target===modal) closeModal(); });
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape' && modal.classList.contains('show')) closeModal();
+});
+  // =========================
+  // FAQ accordion (awal: tertutup)
+  // =========================
+  document.querySelectorAll('.faq').forEach(f=>{
+    // start closed
+    f.classList.remove('open');
+    f.querySelector('.faq-content').style.display='none';
+    f.querySelector('.faq-sum').addEventListener('click', ()=>{
+      const isOpen = f.classList.contains('open');
+      document.querySelectorAll('.faq').forEach(x=>x.classList.remove('open'));
+      document.querySelectorAll('.faq .faq-content').forEach(x=>x.style.display='none');
+      if(!isOpen){
+        f.classList.add('open');
+        f.querySelector('.faq-content').style.display='block';
+      }
+    });
+  });
+
+  // =========================
+  // Jika klik link hash langsung (mis. dari dropdown)
+  // =========================
+  document.querySelectorAll('a[href^="#"]').forEach(a=>{
+    a.addEventListener('click', (e)=>{
+      const to = a.getAttribute('href');
+      if(to.length>1){ e.preventDefault(); smoothTo(to); }
+    });
+  });
+
+  // Fokus keyboard ke dropdown
+  btnPeta.addEventListener('keydown', (e)=>{
+    if(e.key==='Enter' || e.key===' '){ e.preventDefault(); ddPeta.classList.toggle('show'); }
+    if(e.key==='Escape'){ ddPeta.classList.remove('show'); btnPeta.focus(); }
+  });
+  // Scroll progress bar
+const progressBar = document.getElementById('progress-bar');
+window.addEventListener('scroll', () => {
+  let scrollTop = window.scrollY;
+  let docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  let progress = (scrollTop / docHeight) * 100;
+  progressBar.style.width = progress + "%";
+});
+// Preloader auto-hide setelah halaman load
+window.addEventListener("load", () => {
+  const preloader = document.getElementById("preloader");
+  setTimeout(() => {
+    preloader.classList.add("hide");
+  }, 1500); // 1.5 detik loading sebelum hilang
+});
+</script>
+</body>
+</html>

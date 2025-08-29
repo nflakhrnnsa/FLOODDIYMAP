@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Peta Bencana Banjir DIY</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+  <style>
+    /* ========== RESET & GLOBAL ========== */
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --header-h:60px;
+      --sidebar-w:320px;
+      --green:#16a34a;         /* tombol hijau */
+      --green-dark:#15803d;
+      --switch-on:#06573c;     /* warna switch ON */
+      --panel-bg:#fff;      /* panel legend gelap */
+      --border:#e5e7eb;
+    }
+    body{font-family:sans-serif;overflow:hidden;transition:background .3s,color .3s}
+
+    .hidden{display:none!important}
+
+    /* ========== HEADER ========== */
+    .header{
+      position:fixed;inset:0 0 auto 0;height:var(--header-h);
+      background:#fff;color:#000;z-index:2000;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 15px;border-bottom:1px solid var(--border)
+    }
+    .header-left{display:flex;align-items:center;gap:10px}
+    .logo{height:36px;object-fit:contain}
+    .title-wrap{line-height:1.2}
+    .site-title{font-size:18px;font-weight:700;margin-bottom: 3px; /* kasih jarak */}
+    .site-sub{font-size:12px;color:#8f8c8c}
+
+    .theme-btn{
+      background:#1f2937;color:#fff;border:0;border-radius:999px;
+      width:36px;height:36px;cursor:pointer
+    }
+
+   /* ========== SIDEBAR ========== */
+.sidebar{
+  position:fixed;
+  top:var(--header-h);
+  left:0;
+  bottom:0;
+  width:var(--sidebar-w);
+  background:#fff;
+  color:#000;
+  border-right:1px solid var(--border);
+  padding:50px 15px 15px;   /* ⬅️ tambahin padding-top lebih besar biar isi tidak nabrak tombol ✕ */
+  overflow:auto;
+  z-index:1200;
+  transition:left .3s ease;
+}
+.sidebar h3{font-weight:700;margin:10px 0 8px}
+.form-input,.form-select{
+  width:100%;
+  padding:8px 10px;
+  border:1px solid #ccc;
+  border-radius:6px;
+  margin-bottom:10px;
+}
+.btn{display:inline-block;border:0;border-radius:6px;cursor:pointer}
+.btn-primary{width:100%;background:#2563eb;color:#fff;padding:10px}
+.btn-primary:hover{background:#1d4ed8}
+.btn-secondary{width:100%;background:var(--green);color:#fff;padding:10px;margin-top:6px}
+.btn-secondary:hover{background:var(--green-dark)}
+/*filter reset*/
+#reset-filter {
+  background: #ef4444;
+  color: #fff;
+}
+#reset-filter:hover{
+  background: #dc2626;
+}
+/* Tombol close di sidebar */
+.close-btn{
+  position:absolute;
+  top:10px;
+  right:10px;
+  background:transparent;
+  border:none;
+  font-size:20px;
+  cursor:pointer;
+  display:none; /* default hidden, nanti diatur JS */
+  z-index:1300; /* ⬅️ biar selalu di atas isi sidebar */
+}
+
+/* Mode "sidebar ditutup" (berlaku untuk laptop & HP) */
+body.sidebar-collapsed .sidebar{ left:-300px !important; }
+body.sidebar-collapsed #map{ left:0 !important; width:100% !important; }
+    /* Date range */
+    .date-range{display:flex;align-items:center;gap:6px;margin-bottom:12px}
+    .date-input{flex:1;padding:8px 10px;border:1px solid #ccc;border-radius:6px;background:#fff;color:#000}
+    .dash{font-weight:700}
+
+    /* Thematic + Layer */
+    .card{margin-top:15px;padding:10px;background:#f9fafb;border:1px solid var(--border);
+          border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+    .switch{position:relative;display:inline-block;width:46px;height:24px}
+    .switch input{opacity:0;width:0;height:0}
+    .slider{position:absolute;inset:0;background:#d1d5db;transition:.4s;border-radius:9999px}
+    .slider:before{content:"";position:absolute;left:3px;bottom:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.4s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+    .switch input:checked + .slider{background:var(--switch-on)}
+    .switch input:checked + .slider:before{transform:translateX(22px)}
+    .layer-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+
+    /* ========== MAP LAYOUT ========== */
+    #map{
+      position:absolute;top:var(--header-h);left:var(--sidebar-w);right:0;bottom:0;
+      width:calc(100% - var(--sidebar-w));height:calc(100% - var(--header-h));
+      transition:filter .3s
+    }
+
+    /* Floating map UI */
+    .map-ui{position:absolute;inset:auto 10px auto auto;top:calc(var(--header-h) + 10px);
+            display:flex;flex-direction:column;gap:8px;z-index:1500}
+    .map-btn{
+      background:#fff;border:1px solid #ccc;border-radius:8px;padding:6px 6px;cursor:pointer;
+      box-shadow:0 2px 6px rgba(0,0,0,.2)
+    }
+    .map-btn:hover{background:#f3f4f6}
+
+
+.legend-title{
+  font-weight: bold;
+  margin: 10px 0 5px;
+  font-size: 14px;
+  color: #333;
+}
+
+.legend-item{
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.swatch{
+  display: inline-block;
+  width: 20px;
+  height: 15px;
+  margin-right: 6px;
+  border: 1px solid #000;
+}
+
+.swatch-line{
+  display: inline-block;
+  width: 20px;
+  height: 0;
+  margin-right: 6px;
+  border-top: 3px solid #000; /* default, bisa diubah inline */
+}
+
+    /* Legend toggle (kanan atas map) */
+    .legend-panel{
+    position:absolute;top:200px;right:10px;z-index:1500;
+    background:var(--panel-bg);color:black;border-radius:12px;
+    padding:12px 12px 10px;width:240px;
+    box-shadow:0 6px 18px rgba(255, 255, 255, 0.35);
+  }
+  .legend-item{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:14px}
+  .swatch{width:12px;height:12px;border-radius:3px;border:1px solid rgba(255,255,255,.35);display:inline-block}
+
+    /* Basemap panel (kanan-atas) */
+    .basemap-panel{
+      position:absolute;right:10px;top:calc(var(--header-h) + 56px);z-index:1500;
+      background:#fff;color:#000;border-radius:12px;padding:10px 12px;width:210px;
+      box-shadow:0 6px 18px rgba(0,0,0,.25);border:1px solid #ddd
+    }
+    .bm-row{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:14px}
+
+    /* Search suggestions */
+    .suggestions{
+      margin-top:6px;background:#fff;border:1px solid #000000ff;border-radius:8px;
+      box-shadow:0 6px 16px rgba(0,0,0,.1);max-height:190px;overflow:auto;color:#000
+    }
+    .suggestion-item{padding:8px 10px;border-bottom:1px solid #000000ff;cursor:pointer;color:#000}
+    .suggestion-item:hover{background:#a5a3a3}
+    .suggestions .suggestion-item:last-child{border-bottom:none}
+
+    /* Chart panel */
+    .canvas-panel{
+      position:fixed;left:50%;top:55%;transform:translate(-50%,-50%);
+      width:520px;max-height:88vh;overflow:auto;border-radius:12px;padding:16px 16px 20px;
+      z-index:3000;backdrop-filter:saturate(180%) blur(2px)
+    }
+    /* Light mode look */
+    body:not(.dark) .canvas-panel{background:rgba(255,255,255,.95);color:#111}
+    /* Dark mode look */
+    .dark .canvas-panel{background:rgba(30,41,59,.95);color:#fff}
+
+    .canvas-title{font-size:18px;font-weight:700;margin:0 8px 8px}
+    .canvas-close{
+      position:absolute;right:10px;top:10px;border:0;border-radius:8px;cursor:pointer;
+      padding:6px 8px;background:#dc2626;color:#fff
+    }
+    .chart-box{height:220px;margin-top:12px}
+    .chart-title{text-align:center;font-weight:700;margin-bottom:6px}
+
+    /* Dark mode theme swaps */
+    .dark .header{background:#1e293b;color:#fff}
+    .dark .sidebar{background:#1e293b;color:#fff}
+    .dark .card{background:#1f2937;border-color:#374151;color:#e5e7eb}
+    .dark #map{filter:brightness(.9) contrast(1.1)}
+
+    /* RESPONSIVE */
+    @media (max-width: 768px){
+      .sidebar{left:-300px}     /* tertutup default di HP */
+      #map{left:0;width:100%}
+      .sidebar.open{left:0}
+      .canvas-panel{width:92vw}
+    }
+  </style>
+</head>
+<body>
+  <!-- ========== HEADER ========== -->
+  <header class="header">
+    <div class="header-left">
+      <img src="Logo UPN.png" alt="Logo UPN" class="logo"/>
+      <img src="Logo BPBD DIY.png" alt="Logo BPBD DIY" class="logo"/>
+      <div class="title-wrap">
+        <div class="site-title">WebGIS Bencana Banjir DIY</div>
+        <div class="site-sub">UPN "Veteran" Yogyakarta × BPBD DIY</div>
+      </div>
+    </div>
+    <button id="theme-toggle" class="theme-btn"><span id="theme-icon">🌙</span></button>
+  </header>
+
+  <!-- ========== SIDEBAR ========== -->
+<aside id="sidebar" class="sidebar">
+  <!-- Tombol Close (✕) di sidebar -->
+<button id="close-sidebar" class="close-btn" aria-label="Tutup sidebar">✕</button>
+    <!-- Cari -->
+    <input id="search-input" type="text" class="form-input" placeholder="Cari lokasi…"/>
+    <div id="search-suggestions" class="suggestions hidden"></div>
+
+    <!-- Filter -->
+    <h3>Filter Data</h3>
+    <select id="filter-jenis" class="form-select">
+      <option value="">Semua Jenis Banjir</option>
+      <option value="Banjir Genangan">Banjir Genangan</option>
+      <option value="Banjir Luapan Parit">Banjir Luapan Parit</option>
+      <option value="Banjir Luapan Sungai">Banjir Luapan Sungai</option>
+    </select>
+
+    <div class="date-range">
+      <input type="date" id="filter-start-date" class="date-input" value="2024-01-01"/>
+      <span class="dash">-</span>
+      <input type="date" id="filter-end-date" class="date-input" value="2024-12-31"/>
+    </div>
+
+    <select id="filter-kabupaten" class="form-select">
+      <option value="">Semua Kabupaten</option>
+      <option value="BANTUL">Bantul</option>
+      <option value="SLEMAN">Sleman</option>
+      <option value="GUNUNGKIDUL">Gunungkidul</option>
+      <option value="KULON PROGO">Kulon Progo</option>
+      <option value="KOTA YOGYAKARTA">Kota Yogyakarta</option>
+    </select>
+
+    <button id="apply-filter" class="btn btn-primary">Terapkan Filter</button>
+<button id="reset-filter" class="btn btn-secondary">Reset</button>
+</div>
+
+    <!-- Grafik -->
+    <button id="show-chart" class="btn btn-secondary">Tampilkan Grafik 📊</button>
+
+    <!-- Thematic -->
+    <div class="card">
+      <h3>Pilih Peta Tematik</h3>
+      <select id="thematic-select" class="form-select">
+        <option value="kebanjir">Data Kejadian Banjir DIY 2024</option>
+        <option value="bahayabanjir">Bahaya Banjir DIY</option>
+        <option value="curahhujan">Curah Hujan</option>
+        <option value="kerapatansungai">Kerapatan Sungai</option>
+        <option value="jarakdarisungai">Jarak dari Sungai</option>
+        <option value="jenistanah">Jenis Tanah</option>
+        <option value="gunalahan">Penggunaan Lahan</option>
+        <option value="lereng">Kemiringan Lereng</option>
+        <option value="admin">Batas Kecamatan DIY</option>
+        <option value="kabupaten">Batas Kabupaten DIY</option>
+      </select>
+    </div>
+
+    <!-- Kontrol Layer -->
+    <div class="card">
+      <h3>Kontrol Layer</h3>
+      <div class="layer-row"><span>Bahaya Banjir DIY</span>
+        <label class="switch"><input type="checkbox" id="bahayabanjir" checked/><span class="slider"></span></label>
+      </div>
+      <div class="layer-row"><span>Kejadian Banjir DIY 2024</span>
+        <label class="switch"><input type="checkbox" id="kebanjir" checked/><span class="slider"></span></label>
+      </div>
+      <div class="layer-row"><span>Curah Hujan</span>
+        <label class="switch"><input type="checkbox" id="curahhujan"/><span class="slider"></span></label>
+      </div>
+      <div class="layer-row"><span>Kerapatan Sungai</span>
+        <label class="switch"><input type="checkbox" id="kerapatansungai"/><span class="slider"></span></label>
+      </div>
+      <div class="layer-row"><span>Jarak dari Sungai</span>
+        <label class="switch"><input type="checkbox" id="jarakdarisungai"/><span class="slider"></span></label>
+      </div>
+      <div class="layer-row"><span>Jenis Tanah</span>
+        <label class="switch"><input type="checkbox" id="jenistanah"/><span class="slider"></span></label>
+      </div>
+      <div class="layer-row"><span>Penggunaan Lahan</span>
+        <label class="switch"><input type="checkbox" id="gunalahan"/><span class="slider"></span></label>
+      </div>
+      <div class="layer-row"><span>Kemiringan Lereng</span>
+        <label class="switch"><input type="checkbox" id="lereng"/><span class="slider"></span></label>
+      </div>
+      <div class="layer-row"><span>Batas Kecamatan</span>
+        <label class="switch"><input type="checkbox" id="admin" checked/><span class="slider"></span></label>
+      </div>
+      <div class="layer-row"><span>Batas Kabupaten</span>
+        <label class="switch"><input type="checkbox" id="kabupaten" checked/><span class="slider"></span></label>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========== MAP ========== -->
+  <div id="map"></div>
+
+
+  <div class="map-ui">
+    <button id="btn-basemap" class="map-btn">🗺</button>
+    <button id="btn-mypos"  class="map-btn">📍</button>
+    <button id="btn-legend" class="map-btn">📑</button>
+  </div>
+
+  <!-- Legend panel -->
+<div id="legend-panel" class="legend-panel hidden">
+  <!-- Jenis Banjir -->
+  <h4 class="legend-title">Jenis Banjir</h4>
+  <div class="legend-item"><span class="swatch" style="background:#ff0000"></span> Banjir Genangan</div>
+  <div class="legend-item"><span class="swatch" style="background:#ff6600"></span> Banjir Luapan Parit</div>
+  <div class="legend-item"><span class="swatch" style="background:#009933"></span> Banjir Luapan Sungai</div>
+
+  <!-- Indeks Bahaya -->
+  <h4 class="legend-title">Indeks Bahaya Banjir</h4>
+  <div class="legend-item"><span class="swatch" style="background:#176e17"></span> Rendah</div>
+  <div class="legend-item"><span class="swatch" style="background:#e8bf1a"></span> Sedang</div>
+  <div class="legend-item"><span class="swatch" style="background:#de1010"></span> Tinggi</div>
+
+  <!-- Batas Administrasi -->
+  <h4 class="legend-title">Batas Administrasi</h4>
+  <div class="legend-item">
+    <span class="swatch-line" style="border-top:3px solid black"></span> Batas Kecamatan
+  </div>
+  <div class="legend-item">
+    <span class="swatch-line" style="border-top:3px solid yellow"></span> Batas Kabupaten
+  </div>
+
+</div>
+
+  <!-- Basemap panel (kanan-atas) -->
+  <div id="basemap-panel" class="basemap-panel hidden">
+    <div class="bm-row"><input type="radio" name="bm" value="osm" checked/> OpenStreetMap</div>
+    <div class="bm-row"><input type="radio" name="bm" value="dark"/> Dark Mode</div>
+    <div class="bm-row"><input type="radio" name="bm" value="satellite"/> Satellite</div>
+    <div class="bm-row"><input type="radio" name="bm" value="positron"/> Positron</div>
+    <div class="bm-row"><input type="radio" name="bm" value="toner"/> Stamen Toner Lite</div>
+    <div class="bm-row"><input type="radio" name="bm" value="voyager"/> CARTO Voyager</div>
+  </div>
+
+  <!-- CHART PANEL -->
+  <div id="canvas-panel" class="canvas-panel hidden">
+    <button id="close-canvas" class="canvas-close">X</button>
+    <div class="canvas-title">Analisis Data Banjir</div>
+    <div class="chart-title">Distribusi Jenis Banjir</div>
+    <div class="chart-box"><canvas id="chart-jenis"></canvas></div>
+
+    <div class="chart-title" style="margin-top:8px">Trend Kejadian Banjir per Bulan</div>
+    <div class="chart-box"><canvas id="chart-bulanan"></canvas></div>
+  </div>
+
+  <!-- Leaflet + Chart.js -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    /* ================= MAP INIT ================= */
+    const map = L.map('map').setView([-7.7956, 110.3695], 10);
+
+    const basemaps = {
+      osm: L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution:'&copy; OpenStreetMap'
+      }),
+      dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution:'&copy; OpenStreetMap & CARTO', subdomains:'abcd'
+      }),
+      satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution:'&copy; Esri'
+      }),
+      positron: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution:'&copy; OpenStreetMap & CARTO', subdomains:'abcd'
+      }),
+      toner: L.tileLayer('https://stamen-tiles.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png', {
+        attribution:'Map tiles by Stamen, Data &copy; OpenStreetMap'
+      }),
+      voyager: L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution:'&copy; OpenStreetMap & CARTO', subdomains:'abcd'
+      })
+    };
+    let currentBasemap = basemaps.osm.addTo(map);
+
+    // Resize safety after initial load
+    setTimeout(()=>map.invalidateSize(), 150);
+
+    /* ================= LAYERS ================= */
+    
+    const adminLayer      = L.layerGroup().addTo(map);
+    const kabupatenLayer      = L.layerGroup().addTo(map);
+    const bahayabanjirLayer   = L.layerGroup().addTo(map);
+    const curahhujanLayer     = L.layerGroup();
+    const kerapatansungaiLayer  = L.layerGroup();
+    const jarakdarisungaiLayer = L.layerGroup();
+    const jenistanahLayer = L.layerGroup();
+    const gunalahanLayer = L.layerGroup();
+    const lerengLayer     = L.layerGroup();
+    const kebanjirLayer = L.layerGroup().addTo(map);
+    
+map.createPane('kebanjirPane');
+map.getPane('kebanjirPane').style.zIndex = 650;
+
+map.createPane('adminPane');
+map.getPane('adminPane').style.zIndex = 600;
+
+map.createPane('kabupatenPane');
+// turunkan, jangan 5500
+map.getPane('kabupatenPane').style.zIndex = 590;
+
+map.createPane('bahayabanjirPane');
+map.getPane('bahayabanjirPane').style.zIndex = 500;
+
+map.createPane('curahhujanPane');
+map.getPane('curahhujanPane').style.zIndex = 450;
+
+map.createPane('jarakdarisungaiPane');
+map.getPane('jarakdarisungaiPane').style.zIndex = 400;
+
+map.createPane('gunalahanPane');
+map.getPane('gunalahanPane').style.zIndex = 350;
+
+map.createPane('kerapatansungaiPane');
+map.getPane('kerapatansungaiPane').style.zIndex = 300;
+
+map.createPane('lerengPane');
+map.getPane('lerengPane').style.zIndex = 250;
+
+map.createPane('jenistanahPane');
+map.getPane('jenistanahPane').style.zIndex = 200;
+
+
+
+// Layer GeoJSON
+//lereng
+fetch("lereng.geojson")
+  .then(res => res.json())
+  .then(lerengData => {
+const lerengLayerGeo = L.geoJSON(lerengData, {
+     pane: 'lerengPane',
+      style:(f)=>{
+    const kelas6 = (f.properties?.Kemiringan_Lereng || '').toLowerCase();
+    const warna6 = {
+      '0 - 8 % (datar)': '#206b23ff',
+      '8 - 15 % (landai)': '#87c554ff',
+      '15 - 25 % (agak curam)': '#e1e424ff',
+      '25 - 40 % (curam)': '#cc8d04ff',
+      '> 40 % (sangat curam)': '#e41515ff'
+      
+    };
+    return {
+      weight: 0,                  // hapus outline
+      color: 'transparent',       // garis transparan
+      fillColor: warna6[kelas6] || '#ccc',
+      fillOpacity: .7
+    };
+  },
+  onEachFeature:(feature, layer)=>{
+    let html = '<div style="text-align:center;font-size:14px;">' +
+               '<h3 style="margin:0 0 5px;">Detail Kemiringan Lereng</h3>';
+    for(const k in feature.properties){ 
+      html += `<b>${k}:</b> ${feature.properties[k]}<br>` 
+    }
+    html += '</div>'; 
+    layer.bindPopup(html);
+  }
+}).addTo(lerengLayer);
+});
+
+//gunalahan
+fetch("gunalahan.geojson")
+  .then(res => res.json())
+  .then(gunalahanData => {
+    const gunalahanLayerGeo = L.geoJSON(gunalahanData, {
+         pane: 'gunalahanPane',
+      style:(f)=>{
+    const kelas5 = (f.properties?.Penggunaan_Lahan || '').toLowerCase();
+    const warna5 = {
+      'badan air': '#558de0ff',
+      'hutan lahan kering': '#504a30ff',
+      'rumput rawa': '#2a691aff',
+      'tanaman campuran': '#1c664dff',
+      'permukiman': '#caae33ff',
+      'lahan terbuka': '#815023ff',
+      'padang rumput': '#2c7834'
+    };
+    return {
+      weight: 0,                  // hapus outline
+      color: 'transparent',       // garis transparan
+      fillColor: warna5[kelas5] || '#ccc',
+      fillOpacity: .7
+    };
+  },
+  onEachFeature:(feature, layer)=>{
+    let html = '<div style="text-align:center;font-size:14px;">' +
+               '<h3 style="margin:0 0 5px;">Detail Penggunaan Lahan</h3>';
+    for(const k in feature.properties){ 
+      html += `<b>${k}:</b> ${feature.properties[k]}<br>` 
+    }
+    html += '</div>'; 
+    layer.bindPopup(html);
+  }
+}).addTo(gunalahanLayer);
+});
+
+//jenistanah
+fetch("jenistanah.geojson")
+  .then(res => res.json())
+  .then(jenistanahData => {
+    const jenistanahLayerGeo = L.geoJSON(jenistanahData, {
+         pane: 'jenistanahPane',
+      style:(f)=>{
+    const kelas4 = (f.properties?.Jenis_Tanah || '').toLowerCase();
+    const warna4 = {
+      'luvisol': '#2c7834',
+      'andosol': '#d10e04',
+      'litosol': '#bae655',
+      'gleisol': '#ede43e',
+      'fluvisol': '#ed963e',
+      'nitosol': '#d10e04',
+      'vertisol': '#384a50ff'
+    };
+    return {
+      weight: 0,                  // hapus outline
+      color: 'transparent',       // garis transparan
+      fillColor: warna4[kelas4] || '#ccc',
+      fillOpacity: .7
+    };
+  },
+  onEachFeature:(feature, layer)=>{
+    let html = '<div style="text-align:center;font-size:14px;">' +
+               '<h3 style="margin:0 0 5px;">Detail Jenis Tanah</h3>';
+    for(const k in feature.properties){ 
+      html += `<b>${k}:</b> ${feature.properties[k]}<br>` 
+    }
+    html += '</div>'; 
+    layer.bindPopup(html);
+  }
+}).addTo(jenistanahLayer);
+});
+
+  // jarakdarisungai
+  fetch("jarakdarisungai.geojson")
+  .then(res => res.json())
+  .then(jarakdarisungaiData => {
+  const jarakdarisungaiLayerGeo = L.geoJSON(jarakdarisungaiData, {
+     pane: 'jarakdarisungaiPane',
+      style:(f)=>{
+    const kelas2 = (f.properties?.Jarak_dari_Sungai|| '').toLowerCase();
+    const warna2 = {
+      '>500 m (sangat jauh)': '#1f207cff',
+      '0 - 50 m (sangat dekat)': '#d10e04',
+      '50 - 100 m (dekat)': '#e9a21eff',
+      '100 - 250 m (sedang)': '#eee537ff',
+      '250 - 500 m (jauh)': '#37887dff'
+    };
+    return {
+      weight: 0,                  // hapus outline
+      color: 'transparent',       // garis transparan
+      fillColor: warna2[kelas2] || '#ccc',
+      fillOpacity: .9
+    };
+  },
+  onEachFeature:(feature, layer)=>{
+    let html = '<div style="text-align:center;font-size:14px;">' +
+               '<h3 style="margin:0 0 5px;">Detail Jarak dari Sungai</h3>';
+    for(const k in feature.properties){ 
+      html += `<b>${k}:</b> ${feature.properties[k]}<br>` 
+    }
+    html += '</div>'; 
+    layer.bindPopup(html);
+  }
+}).addTo(jarakdarisungaiLayer);
+});
+
+//curahhujan
+fetch("curahhujan.geojson")
+  .then(res => res.json())
+  .then(curahhujanData => {
+    const curahhujanLayerGeo = L.geoJSON(curahhujanData, {
+         pane: 'curahhujanPane',
+      style:(f)=>{
+    const kelas1 = (f.properties?.Curah_Hujan || '').toLowerCase();
+    const warna1 = {
+      '>1150 mm/th': '#14147d',
+      '850 - 950 mm/th': '#8a8ac4ff',
+      '1050 - 1150 mm/th': '#3737b3',
+      '950 - 1050 mm/th': '#5050bf',
+      '0 - 850 mm/th': '#cfcfecff'
+    };
+    return {
+      weight: 0,                  // hapus outline
+      color: 'transparent',       // garis transparan
+      fillColor: warna1[kelas1] || '#ccc',
+      fillOpacity: .7
+    };
+  },
+  onEachFeature:(feature, layer)=>{
+    let html = '<div style="text-align:center;font-size:14px;">' +
+               '<h3 style="margin:0 0 5px;">Detail Curah Hujan</h3>';
+    for(const k in feature.properties){ 
+      html += `<b>${k}:</b> ${feature.properties[k]}<br>` 
+    }
+    html += '</div>'; 
+    layer.bindPopup(html);
+  }
+}).addTo(curahhujanLayer);
+});
+
+//kerapatansungai
+fetch("kerapatansungai.geojson")
+  .then(res => res.json())
+  .then(kerapatansungaiData => {
+    const kerapatansungaiLayerGeo = L.geoJSON(kerapatansungaiData, {
+         pane: 'kerapatansungaiPane',
+      style:(f)=>{
+    const kelas3 = (f.properties?.Kerapatan_Sungai || '').toLowerCase();
+    const warna3 = {
+      '<0,62 km/km2': '#de1010',
+      '0,62 - 1.44 km/km2': '#e99331ff',
+      '1,44 - 2,27 km/km2': '#ebd067',
+      '2,27 - 3,10 km/km2': '#4d967aff',
+      '>3,10 km/km2': '#14147d'
+    };
+    return {
+      weight: 0,                  // hapus outline
+      color: 'transparent',       // garis transparan
+      fillColor: warna3[kelas3] || '#ccc',
+      fillOpacity: .7
+    };
+  },
+  onEachFeature:(feature, layer)=>{
+    let html = '<div style="text-align:center;font-size:14px;">' +
+               '<h3 style="margin:0 0 5px;">Detail Kerapatan Sungai</h3>';
+    for(const k in feature.properties){ 
+      html += `<b>${k}:</b> ${feature.properties[k]}<br>` 
+    }
+    html += '</div>'; 
+    layer.bindPopup(html);
+  }
+}).addTo(kerapatansungaiLayer);
+});
+
+//bahayabanjirsungai
+fetch("bahayabanjir.geojson")
+  .then(res => res.json())
+  .then(bahayabanjirData => {
+    const bahayabanjirLayerGeo = L.geoJSON(bahayabanjirData, {
+         pane: 'bahayabanjirPane',
+      style:(f)=>{
+    const kelas7 = (f.properties?.Kelas_Banjir || '').toLowerCase();
+    const warna7 = {
+      'rendah': '#176e17',
+      'sedang': '#e8bf1a',
+      'tinggi': '#de1010'
+    };
+    return {
+      weight: 0,                  // hapus outline
+      color: 'transparent',       // garis transparan
+      fillColor: warna7[kelas7] || '#ccc',
+      fillOpacity: .7
+    };
+  },
+  onEachFeature:(feature, layer)=>{
+    let html = '<div style="text-align:center;font-size:14px;">' +
+               '<h3 style="margin:0 0 5px;">Detail Bahaya Banjir</h3>';
+    for(const k in feature.properties){ 
+      html += `<b>${k}:</b> ${feature.properties[k]}<br>` 
+    }
+    html += '</div>'; 
+    layer.bindPopup(html);
+  }
+}).addTo(bahayabanjirLayer);
+});
+
+
+    // kabupaten
+fetch("kabupaten.geojson")
+  .then(res => res.json())
+  .then(kabupatenData => {
+    const kabupatenLayerGeo = L.geoJSON(kabupatenData, {
+      pane: 'kabupatenPane',
+      style: { color: '#f7ee9e', weight: 5, fillOpacity: 0 },
+      onEachFeature: (feature, layer) => {
+        let html = '<div style="text-align:center;font-size:14px;">' +
+                   '<h3 style="margin:0 0 5px;">Detail Kabupaten</h3>';
+        for (const k in feature.properties) {
+          html += `<b>${k}:</b> ${feature.properties[k]}<br>`;
+        }
+        html += '</div>';
+        layer.bindPopup(html);
+      }
+    }).addTo(kabupatenLayer);
+  });
+
+// admin
+fetch("admin.geojson")
+  .then(res => res.json())
+  .then(adminData => {
+    const adminLayerGeo = L.geoJSON(adminData, {
+      pane: 'adminPane',
+      style: { color: '#000000ff', weight: 1, fillOpacity: 0 },
+      onEachFeature: (feature, layer) => {
+        let html = '<div style="text-align:center;font-size:14px;">' +
+                   '<h3 style="margin:0 0 5px;">Detail Kecamatan</h3>';
+        for (const k in feature.properties) {
+          html += `<b>${k}:</b> ${feature.properties[k]}<br>`;
+        }
+        html += '</div>';
+        layer.bindPopup(html);
+      }
+    }).addTo(adminLayer);
+  });
+
+  let markers = [];
+  let kebanjirData = null;
+
+    //kebanjir 
+    fetch("kebanjir.geojson")
+  .then(res => res.json())
+  .then(data => {
+     kebanjirData = data;
+
+    const kebanjirLayerGeo = L.geoJSON(kebanjirData, {
+        
+      pointToLayer:(feature, latlng)=>{
+        let c = '#ff0000';
+        const j = (feature.properties?.Jenis_Banj||'').toLowerCase();
+        if(j==='banjir luapan parit') c='#ff6600';
+        else if(j==='banjir luapan sungai') c='#009933';
+        else if(j==='banjir genangan') c='#ff0000';
+        const m = L.circleMarker(latlng,{
+          radius:7, fillColor:c, color:'#fff', weight:1, opacity:1, fillOpacity:.85, pane: 'kebanjirPane'
+        });
+        markers.push({marker:m, feature});
+        return m;
+      },
+      onEachFeature:(feature, layer)=>{
+        let html = '<div style="text-align:center;font-size:14px;">' +
+                   '<h3 style="margin:0 0 5px;">Detail Kejadian</h3>';
+        for(const k in feature.properties){
+          html += `<b>${k}:</b> ${feature.properties[k] ?? 'Data Kejadian Banjir DIY 2024'}<br>`
+        }
+        html += '</div>'; layer.bindPopup(html);
+      }
+    }).addTo(kebanjirLayer);
+});
+  
+    // Mapping id/value → layer
+const overlayLayers = { 
+   
+  admin: adminLayer, 
+  kabupaten: kabupatenLayer, 
+  bahayabanjir: bahayabanjirLayer, 
+  curahhujan: curahhujanLayer, 
+  kerapatansungai: kerapatansungaiLayer, 
+  jarakdarisungai: jarakdarisungaiLayer, 
+  jenistanah: jenistanahLayer, 
+  gunalahan: gunalahanLayer, 
+  lereng: lerengLayer,
+  kebanjir: kebanjirLayer
+};
+
+
+    // Apply default checkboxes state
+    Object.keys(overlayLayers).forEach(id=>{
+      const cb = document.getElementById(id);
+      if(!cb) return;
+      if(cb.checked){ map.addLayer(overlayLayers[id]); }
+      else{ map.removeLayer(overlayLayers[id]); }
+    });
+
+    document.querySelectorAll('.card input[type="checkbox"]').forEach(cb=>{
+      cb.addEventListener('change', e=>{
+        const id = e.target.id;
+        if(e.target.checked){ map.addLayer(overlayLayers[id]); }
+        else{ map.removeLayer(overlayLayers[id]); }
+      }); 
+    });
+
+    // Thematic select (show only selected)
+    const thematicSelect = document.getElementById('thematic-select');
+    thematicSelect.addEventListener('change', e=>{
+      const selected = e.target.value;
+       // hide semua layer dulu
+  Object.values(overlayLayers).forEach(layer => map.removeLayer(layer));
+  /// Nyalakan yang dipilih
+  if(overlayLayers[selected]) {
+    map.addLayer(overlayLayers[selected]);
+    document.getElementById(selected).checked = true; // sync ke checkbox
+  }
+});
+
+    /* ================= THEME TOGGLE ================= */
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+    function applySavedTheme(){
+      const mode = localStorage.getItem('theme');
+      if(mode==='dark'){ document.body.classList.add('dark'); themeIcon.textContent='🔆'; }
+      else{ document.body.classList.remove('dark'); themeIcon.textContent='🌙'; }
+    }
+    themeToggle.addEventListener('click', ()=>{
+      document.body.classList.toggle('dark');
+      localStorage.setItem('theme', document.body.classList.contains('dark')?'dark':'light');
+      applySavedTheme();
+    });
+    applySavedTheme();
+
+    const sidebar = document.getElementById('sidebar');
+const closeBtn = document.getElementById('close-sidebar');
+
+// Fungsi state
+function isMobile(){ return window.innerWidth <= 768; }
+
+function openSidebar(){
+  document.body.classList.remove('sidebar-collapsed');
+  sidebar.classList.add('open');
+  closeBtn.style.display = 'block';
+  const hamb = document.getElementById('hamburger-control');
+  if(hamb) hamb.style.display = 'none';
+  map.invalidateSize();
+}
+function closeSidebar(){
+  document.body.classList.add('sidebar-collapsed');
+  sidebar.classList.remove('open');
+  closeBtn.style.display = 'none';
+  const hamb = document.getElementById('hamburger-control');
+  if(hamb) hamb.style.display = 'block';
+  map.invalidateSize();
+}
+
+// ✕ di sidebar
+closeBtn.addEventListener('click', closeSidebar);
+
+// Buat tombol ☰ sebagai Leaflet control
+let hambContainerEl = null;
+const hamburgerControl = L.control({ position: 'topleft' });
+hamburgerControl.onAdd = function(map){
+  const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+  container.id = 'hamburger-control';
+  const a = L.DomUtil.create('a', '', container);
+  a.href = '#';
+  a.innerHTML = '▶';
+  a.title = 'Buka Sidebar';
+  a.style.width = '35px';
+  a.style.height = '25px';
+  a.style.lineHeight = '26px';
+  a.style.fontSize = '18px';
+  L.DomEvent.disableClickPropagation(container);
+  L.DomEvent.on(a, 'click', (e)=>{ L.DomEvent.preventDefault(e); openSidebar(); });
+  hambContainerEl = container;
+  return container;
+};
+hamburgerControl.addTo(map);
+
+// Posisikan tepat di bawah zoom
+map.whenReady(()=>{
+  setTimeout(()=>{
+    const zoomCtl = document.querySelector('.leaflet-control-zoom');
+    const hambCtl = document.getElementById('hamburger-control');
+    if(zoomCtl && hambCtl){
+      zoomCtl.insertAdjacentElement('afterend', hambCtl);
+    }
+  },0);
+});
+
+// State awal
+function setInitialState(){
+  if(isMobile()){ closeSidebar(); } else { openSidebar(); }
+}
+setInitialState();
+window.addEventListener('resize', ()=>{
+  setInitialState();
+});
+sidebar.addEventListener('transitionend', ()=> map.invalidateSize());
+
+
+
+    /* ================= BASEMAP PANEL ================= */
+    const bmPanel = document.getElementById('basemap-panel');
+    document.getElementById('btn-basemap').addEventListener('click', ()=>{
+      bmPanel.classList.toggle('hidden');
+    });
+    bmPanel.addEventListener('change', (e)=>{
+      if(e.target.name!=='bm') return;
+      currentBasemap.remove();
+      currentBasemap = basemaps[e.target.value].addTo(map);
+    });
+
+    /* ================= LEGEND PANEL ================= */
+    const legendPanel = document.getElementById('legend-panel');
+  const btnLegend  = document.getElementById('btn-legend');
+
+  function toggleLegend(){ 
+    legendPanel.classList.toggle('hidden'); 
+  }
+  btnLegend.addEventListener('click', toggleLegend);
+
+    /* ================= GEOLOCATION ================= */
+    let myPosMarker = null, myAccCircle = null; 
+    document.getElementById('btn-mypos').addEventListener('click', ()=>{
+      if(!navigator.geolocation){ alert('Geolokasi tidak didukung browser ini.'); return; }
+      navigator.geolocation.getCurrentPosition(pos=>{
+        const {latitude, longitude, accuracy} = pos.coords;
+        const latlng = [latitude, longitude];
+        if(myPosMarker){ map.removeLayer(myPosMarker); }
+        if(myAccCircle){ map.removeLayer(myAccCircle); }
+        myPosMarker = L.marker(latlng).addTo(map).bindPopup('Lokasi Anda').openPopup();
+        if(accuracy){
+          myAccCircle = L.circle(latlng, {radius:accuracy, weight:1, color:'#2563eb', fillColor:'#2563eb', fillOpacity:.15}).addTo(map);
+        }
+        map.setView(latlng, 15);
+      }, err=>{
+        alert('Gagal mendapatkan lokasi: ' + err.message);
+      }, {enableHighAccuracy:true, maximumAge:10000, timeout:10000});
+    });
+
+    
+
+    /* ================= SEARCH (Nominatim) ================= */
+    const searchInput = document.getElementById('search-input');
+    const searchSuggestions = document.getElementById('search-suggestions');
+
+    let searchMarker = null; // marker pencarian terakhir
+
+    function diyPriorityScore(loc){
+      const st = (loc.address?.state || loc.address?.region || loc.display_name || '').toLowerCase();
+      return (st.includes('daerah istimewa yogyakarta') || st.includes('di yogyakarta') || st.includes('yogyakarta')) ? 0 : 1;
+    }
+
+    searchInput.addEventListener('input', async ()=>{
+      const q = searchInput.value.trim();
+      searchSuggestions.innerHTML = '';
+      if(q.length < 2){ searchSuggestions.classList.add('hidden'); return; }
+
+      const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&q=${encodeURIComponent(q)}&limit=10&countrycodes=id`;
+      try{
+        const res = await fetch(url, {headers:{'Accept-Language':'id'}});
+        const results = await res.json();
+
+        // Urutkan: DIY dulu
+        results.sort((a,b)=> diyPriorityScore(a) - diyPriorityScore(b));
+
+        // Ambil maksimal 8 & render
+        results.slice(0,8).forEach(loc=>{
+          const div = document.createElement('div');
+          div.className = 'suggestion-item';
+          div.textContent = loc.display_name;
+          div.addEventListener('click', ()=>{
+            const coords = [parseFloat(loc.lat), parseFloat(loc.lon)];
+
+            // Hapus marker lama
+            if(searchMarker) map.removeLayer(searchMarker);
+
+            searchMarker = L.marker(coords).addTo(map).bindPopup(loc.display_name).openPopup();
+            map.setView(coords, 14);
+
+            searchInput.value = '';
+            searchSuggestions.classList.add('hidden');
+          });
+          searchSuggestions.appendChild(div);
+        });
+        searchSuggestions.classList.remove('hidden');
+      }catch(e){
+        console.error(e);
+        searchSuggestions.classList.add('hidden');
+      }
+    });
+
+    // Klik di luar -> sembunyikan suggestion
+    document.addEventListener('click', (e)=>{
+      if(!searchInput.contains(e.target) && !searchSuggestions.contains(e.target)){
+        searchSuggestions.classList.add('hidden');
+      }
+    });
+
+    /* ================= FILTER ================= */
+    // tanggal helper
+    function toISO(dateStr){
+      if(!dateStr) return null;
+      const d1 = new Date(dateStr);
+      if(!isNaN(d1)) return d1.toISOString().slice(0,10);
+      const m1 = dateStr.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/);
+      if(m1){
+        let [,dd,mm,yy] = m1;
+        if(yy.length===2) yy = '20'+yy;
+        return `${yy.padStart(4,'0')}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}`;
+      }
+      const m2 = dateStr.match(/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})$/);
+      if(m2){
+        const months={january:1,february:2,march:3,april:4,may:5,june:6,july:7,august:8,september:9,october:10,november:11,december:12,
+                      jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,sept:9,oct:10,nov:11,dec:12};
+        const dd=m2[1], mon=months[m2[2].toLowerCase()], yy=m2[3];
+        if(mon) return `${yy}-${String(mon).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+      }
+      return null;
+    }
+// fungsi filter utama
+function applyFilter(showAll = false) {
+  kebanjirLayer.clearLayers();
+
+  const jenis = document.getElementById("filter-jenis").value;
+  const startDate = document.getElementById("filter-start-date").value;
+  const endDate = document.getElementById("filter-end-date").value;
+  const kabupaten = document.getElementById("filter-kabupaten").value;
+
+  markers.forEach((item) => {
+    const f = item.feature;
+
+    if (showAll) {
+      // reset: tampilkan semua
+      item.marker.addTo(kebanjirLayer);
+      return;
+    }
+
+    const matchJenis = !jenis || f.properties?.Jenis_Banj === jenis;
+
+    // tanggal
+    let matchTanggal = true;
+    const fISO = toISO(f.properties?.Waktu_Keja);
+    if (startDate || endDate) {
+      if (!fISO) matchTanggal = false;
+      if (startDate && fISO < startDate) matchTanggal = false;
+      if (endDate && fISO > endDate) matchTanggal = false;
+    }
+
+    const matchKab = !kabupaten || f.properties?.Kabupaten_ === kabupaten;
+
+    if (matchJenis && matchTanggal && matchKab) {
+      item.marker.addTo(kebanjirLayer);
+    }
+  });
+}
+
+// batas tahun 2024
+(function initDateInputs() {
+  const s = document.getElementById("filter-start-date");
+  const e = document.getElementById("filter-end-date");
+  s.min = "2024-01-01"; s.max = "2024-12-31";
+  e.min = "2024-01-01"; e.max = "2024-12-31";
+  if (!s.value) s.value = "2024-01-01";
+  if (!e.value) e.value = "2024-12-31";
+})();
+
+// apply filter
+document.getElementById("apply-filter").addEventListener("click", () => applyFilter());
+
+// reset filter
+document.getElementById("reset-filter").addEventListener("click", () => {
+  document.getElementById("filter-jenis").value = "";
+  document.getElementById("filter-start-date").value = "";
+  document.getElementById("filter-end-date").value = "";
+  document.getElementById("filter-kabupaten").value = "";
+
+  applyFilter(true); // true artinya tampilkan semua
+});
+
+    /* ================= CHARTS ================= */
+    let chartJenisInstance=null, chartBulananInstance=null;
+
+    function updateCharts(){
+        if(!kebanjirData || !kebanjirData.features){
+    alert("Data banjir belum siap dimuat!");
+    return;
+  }
+      if(chartJenisInstance) chartJenisInstance.destroy();
+      if(chartBulananInstance) chartBulananInstance.destroy();
+
+      // count jenis
+      const jenisCounts = {};
+      (kebanjirData.features||[]).forEach(f=>{
+        const k = f.properties?.Jenis_Banj || 'Tidak diketahui';
+        jenisCounts[k] = (jenisCounts[k]||0)+1;
+      });
+
+      const monthNames = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+      const monthCounts = Array(12).fill(0);
+      (kebanjirData.features||[]).forEach(f=>{
+        const d = new Date(f.properties?.Waktu_Keja);
+        if(!isNaN(d)){ monthCounts[d.getMonth()]++; }
+      });
+
+      const ctx1 = document.getElementById('chart-jenis').getContext('2d');
+      chartJenisInstance = new Chart(ctx1, {
+        type:'bar',
+        data:{ labels:Object.keys(jenisCounts),
+               datasets:[{label:'Jumlah Kejadian', data:Object.values(jenisCounts),
+                          backgroundColor:['#ff6b6b','#4ecdc4','#45b7d1'], borderColor:'#fff', borderWidth:1}]},
+        options:{responsive:true, maintainAspectRatio:false,
+          scales:{y:{beginAtZero:true,title:{display:true,text:'Jumlah Kejadian'}},
+                  x:{title:{display:true,text:'Jenis Banjir'}}}}
+      });
+
+      const ctx2 = document.getElementById('chart-bulanan').getContext('2d');
+      chartBulananInstance = new Chart(ctx2, {
+        type:'line',
+        data:{ labels:monthNames,
+               datasets:[{label:'Jumlah Kejadian per Bulan', data:monthCounts,
+                          backgroundColor:'rgba(79,70,229,.2)', borderColor:'rgba(79,70,229,1)',
+                          borderWidth:2, fill:true, tension:.4}]},
+        options:{responsive:true, maintainAspectRatio:false,
+          scales:{y:{beginAtZero:true,title:{display:true,text:'Jumlah Kejadian'}},
+                  x:{title:{display:true,text:'Bulan'}}}}
+      });
+    }
+
+    const canvasPanel = document.getElementById('canvas-panel');
+    document.getElementById('show-chart').addEventListener('click', ()=>{
+      updateCharts(kebanjirData);
+      canvasPanel.classList.remove('hidden');
+    });
+    document.getElementById('close-canvas').addEventListener('click', ()=>{
+      canvasPanel.classList.add('hidden');
+    });
+
+    // Safety on window resize
+    window.addEventListener('resize', ()=> setTimeout(()=>map.invalidateSize(),150));
+  </script>
+</body>
+</html>
