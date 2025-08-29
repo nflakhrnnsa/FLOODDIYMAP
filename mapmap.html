@@ -283,7 +283,7 @@ body.sidebar-collapsed #map{ left:0 !important; width:100% !important; }
         <option value="jenistanah">Jenis Tanah</option>
         <option value="gunalahan">Penggunaan Lahan</option>
         <option value="lereng">Kemiringan Lereng</option>
-        <option value="admin">Batas Kecamatan DIY</option>
+        <option value="admin">Batas Kapanewon DIY</option>
         <option value="kabupaten">Batas Kabupaten DIY</option>
       </select>
     </div>
@@ -315,7 +315,7 @@ body.sidebar-collapsed #map{ left:0 !important; width:100% !important; }
       <div class="layer-row"><span>Kemiringan Lereng</span>
         <label class="switch"><input type="checkbox" id="lereng"/><span class="slider"></span></label>
       </div>
-      <div class="layer-row"><span>Batas Kecamatan</span>
+      <div class="layer-row"><span>Batas Kapanewon</span>
         <label class="switch"><input type="checkbox" id="admin" checked/><span class="slider"></span></label>
       </div>
       <div class="layer-row"><span>Batas Kabupaten</span>
@@ -351,7 +351,7 @@ body.sidebar-collapsed #map{ left:0 !important; width:100% !important; }
   <!-- Batas Administrasi -->
   <h4 class="legend-title">Batas Administrasi</h4>
   <div class="legend-item">
-    <span class="swatch-line" style="border-top:3px solid black"></span> Batas Kecamatan
+    <span class="swatch-line" style="border-top:3px solid black"></span> Batas Kapanewon
   </div>
   <div class="legend-item">
     <span class="swatch-line" style="border-top:3px solid yellow"></span> Batas Kabupaten
@@ -730,7 +730,7 @@ fetch("admin.geojson")
       style: { color: '#000000ff', weight: 1, fillOpacity: 0 },
       onEachFeature: (feature, layer) => {
         let html = '<div style="text-align:center;font-size:14px;">' +
-                   '<h3 style="margin:0 0 5px;">Detail Kecamatan</h3>';
+                   '<h3 style="margin:0 0 5px;">Detail Kapanewon</h3>';
         for (const k in feature.properties) {
           html += `<b>${k}:</b> ${feature.properties[k]}<br>`;
         }
