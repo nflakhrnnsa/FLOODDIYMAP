@@ -54,33 +54,6 @@
   animation: float 2s ease-in-out infinite;
 }
 
-/* Efek gelombang air */
-.wave {
-  position: absolute;
-  bottom: -20px;
-  left: 50%;
-  width: 160px;
-  height: 160px;
-  margin-left: -80px;
-  border-radius: 43%;
-  background: rgba(14,165,233,0.25);
-  animation: wave 6s infinite linear;
-}
-
-.wave:nth-child(2) {
-  animation-delay: -3s;
-  opacity: 0.5;
-}
-
-@keyframes float {
-  0%,100% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
-}
-
-@keyframes wave {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
 
 /* Hidden state setelah loading */
 #preloader.hide {
@@ -89,40 +62,91 @@
 }
 
   /* =========================
-     HEADER STICKY
-     ========================= */
-  .header{
-    position:sticky; top:0; z-index:1000;
-    background:linear-gradient(180deg, rgba(5,15,25,.9),rgba(5,15,25,.75));
-    backdrop-filter: blur(6px);
-    border-bottom:1px solid rgba(255,255,255,.06);
-  }
-  .nav{
-    max-width:1200px; margin:0 auto; padding:10px 16px;
-    display:flex; align-items:center; justify-content:space-between; gap:16px;
-  }
-  .brand{
-    display:flex; align-items:center; gap:12px;
-  }
-  .brand img{height:36px; width:auto; filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}
-  .menu{
-    display:flex; align-items:center; gap:8px;
-  }
-  .menu .item{
-    position:relative;
-    padding:10px 18px;
-    background:var(--pill);
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:999px;
-    font-weight:600;
-    letter-spacing:.3px;
-    cursor:pointer;
-    transition:transform .15s ease, box-shadow .15s ease, background .2s ease;
-  }
-  .menu .item:hover{ transform:translateY(-1px); box-shadow:0 8px 18px rgba(0,0,0,.25)}
-  .menu .item.active{ outline:2px solid rgba(102,224,255,.25)}
+   HEADER STICKY
+   ========================= */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: linear-gradient(180deg, rgba(5,15,25,.9), rgba(5,15,25,.75));
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.nav {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: nowrap; /* cegah turun */
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.brand img {
+  height: clamp(22px, 3.5vw, 36px); /* fleksibel dari HP ke laptop */
+  width: auto;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,.35));
+}
+.menu {
+  display: flex;
+  flex-wrap: nowrap; /* tetap sejajar */
+  align-items: center;
+  gap: 6px;
+}
+.menu .item {
+  position: relative;
+  padding: clamp(4px, 1vw, 8px) clamp(8px, 2vw, 16px); /* padding fleksibel */
+  background: var(--pill);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: clamp(10px, 1.6vw, 15px); /* auto mengecil */
+  white-space: nowrap; /* jangan pindah baris */
+  cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease, background .2s ease;
+}
+.menu .item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(0,0,0,.25);
+}
+.menu .item.active {
+  outline: 2px solid rgba(102,224,255,.25);
+}
 
+/* =========================
+   RESPONSIVE HEADER FIX
+   ========================= */
+@media (max-width: 768px) {
+  .nav {
+    padding: 8px 12px;
+  }
+  .menu {
+    gap: 4px;
+  }
+  .menu .item {
+    font-size: clamp(10px, 2vw, 13px);
+    padding: 4px 10px;
+  }
+}
+@media (max-width: 480px) {
+  .brand img {
+    height: clamp(18px, 7vw, 26px);
+  }
+  .menu {
+    gap: 3px;
+  }
+  .menu .item {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+}
   /* Dropdown PETA */
+  
   .dropdown{
     position:absolute; right:0; top:calc(100% + 10px);
     background:var(--navy-800);
@@ -160,7 +184,7 @@
   }
   .hero .sub{
     display:block; font-weight:800; letter-spacing:.5px;
-    color:#e35539; text-transform:uppercase; margin-top:10px;
+    color:#ffffff; text-transform:uppercase; margin-top:10px;
   }
   .hero .cta{
     margin-top:20px;
@@ -635,25 +659,89 @@ a:hover {
   .spacer{height:24px}
   .arrow-down{display:inline-block; transform:translateY(1px)}
   .narrow{max-width:900px; margin:0 auto}
+
+  /* =========================
+   RESPONSIVE UNTUK MOBILE
+   ========================= */
+@media (max-width: 768px) {
+  .nav {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .menu {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .menu .item {
+    padding: 8px 14px;
+    font-size: 14px;
+  }
+
+  .hero h1 {
+    font-size: clamp(28px, 8vw, 42px);
+    line-height: 1.1;
+  }
+
+  .hero .sub {
+    font-size: 14px;
+  }
+
+  .hero .cta {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav {
+    padding: 8px 12px;
+  }
+
+  .brand img {
+    height: 28px;
+  }
+
+  .menu .item {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .hero h1 {
+    font-size: clamp(24px, 9vw, 36px);
+  }
+
+  .hero .sub {
+    font-size: 12px;
+  }
+
+  .hero .cta {
+    font-size: 13px;
+    padding: 10px 18px;
+  }
+
+  .title h2 {
+    font-size: clamp(18px, 5vw, 24px);
+  }
+
+  .card h3 {
+    font-size: 14px;
+  }
+}
+
 </style>
 </head>
 <body>
 
-  <div id="preloader">
-  <div class="loader-content">
-    <img src="Logo Floodiymap.png" alt="Logo Floodiymap" class="loader-logo">
-    <div class="wave"></div>
-    <div class="wave"></div>
-  </div>
-</div>
-  <div id="progress-bar"></div>
 <!-- ========================= HEADER ========================= -->
 <header class="header" id="top">
   <nav class="nav">
     <div class="brand" aria-label="Logo">
       <img src="Logo UPN.png" alt="Logo UPN Veteran Yogyakarta">
       <img src="Logo BPBD DIY.png" alt="Logo BPBD DIY">
-      <img src="Logo Floodiymap.png" alt="Logo Floodiymap">
+      <img src="Logo FLOODIYMAP.png" alt="Logo FLOODIYMAP">
     </div>
 
     <div class="menu">
@@ -786,8 +874,8 @@ a:hover {
 <section class="section" id="faq">
   <div class="container">
     <div class="title">
-      <h2>FAQ SISTEM INFORMASI BENCANA BANJIR</h2>
-      <p>Panduan singkat penggunaan peta dan laporan bencana banjir</p>
+      <h2>PERTANYAAN SEPUTAR SISTEM BENCANA BANJIR</h2>
+      <p>Temukan jawaban atas pertanyaan umum tentang sistem peringatan dini dan peta interaktif bencana</p>
     </div>
 
     <div class="faq-wrap narrow">
@@ -889,7 +977,7 @@ a:hover {
       </div>
     </div>
     <div class="col">
-      <img src="Logo Floodiymap.png" alt="">
+      <img src="Logo FLOODIYMAP.png" alt="">
       <div>
         <strong>FLOODIYMAP</strong><br/>
         Flood Daerah Istimewa Yogyakarta Map<br/><br/>
@@ -1040,13 +1128,6 @@ window.addEventListener('scroll', () => {
   let docHeight = document.documentElement.scrollHeight - window.innerHeight;
   let progress = (scrollTop / docHeight) * 100;
   progressBar.style.width = progress + "%";
-});
-// Preloader auto-hide setelah halaman load
-window.addEventListener("load", () => {
-  const preloader = document.getElementById("preloader");
-  setTimeout(() => {
-    preloader.classList.add("hide");
-  }, 1500); // 1.5 detik loading sebelum hilang
 });
 </script>
 </body>
