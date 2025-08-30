@@ -267,7 +267,7 @@ body.sidebar-collapsed #map{ left:0 !important; width:100% !important; }
     </div>
 
     <select id="filter-Kabupaten" class="form-select">
-      <option value="">Semua Kabupaten</option>
+      <option value="">Semua Kabupaten/Kota</option>
       <option value="BANTUL">Bantul</option>
       <option value="SLEMAN">Sleman</option>
       <option value="GUNUNGKIDUL">Gunungkidul</option>
@@ -294,8 +294,8 @@ body.sidebar-collapsed #map{ left:0 !important; width:100% !important; }
         <option value="jenistanah">Jenis Tanah</option>
         <option value="gunalahan">Penggunaan Lahan</option>
         <option value="lereng">Kemiringan Lereng</option>
-        <option value="admin">Batas Kapanewon DIY</option>
-        <option value="kabupaten">Batas Kabupaten DIY</option>
+        <option value="admin">Batas Kapanewon/Kemantren DIY</option>
+        <option value="kabupaten">Batas Kabupaten/Kota DIY</option>
       </select>
     </div>
 
@@ -326,10 +326,10 @@ body.sidebar-collapsed #map{ left:0 !important; width:100% !important; }
       <div class="layer-row"><span>Kemiringan Lereng</span>
         <label class="switch"><input type="checkbox" id="lereng"/><span class="slider"></span></label>
       </div>
-      <div class="layer-row"><span>Batas Kapanewon</span>
+      <div class="layer-row"><span>Batas Kapanewon/Kemantren</span>
         <label class="switch"><input type="checkbox" id="admin" checked/><span class="slider"></span></label>
       </div>
-      <div class="layer-row"><span>Batas Kabupaten</span>
+      <div class="layer-row"><span>Batas Kabupaten/Kota</span>
         <label class="switch"><input type="checkbox" id="kabupaten" checked/><span class="slider"></span></label>
       </div>
     </div>
@@ -348,17 +348,19 @@ body.sidebar-collapsed #map{ left:0 !important; width:100% !important; }
   <!-- Legend panel -->
 <div id="legend-panel" class="legend-panel hidden">
   <!-- Jenis Banjir -->
+  <div class="legend-layer" id="legend-kebanjir">
   <h4 class="legend-title">Jenis Banjir</h4>
   <div class="legend-item"><span class="swatch" style="background:#ff0000"></span> Banjir Genangan</div>
   <div class="legend-item"><span class="swatch" style="background:#ff6600"></span> Banjir Luapan Parit</div>
   <div class="legend-item"><span class="swatch" style="background:#009933"></span> Banjir Luapan Sungai</div>
-
+</div>
   <!-- Indeks Bahaya -->
+<div class="legend-layer" id="legend-bahayabanjir">
   <h4 class="legend-title">Indeks Bahaya Banjir</h4>
   <div class="legend-item"><span class="swatch" style="background:#176e17"></span> Rendah</div>
   <div class="legend-item"><span class="swatch" style="background:#e8bf1a"></span> Sedang</div>
   <div class="legend-item"><span class="swatch" style="background:#de1010"></span> Tinggi</div>
-
+</div>
    <!-- Lereng -->
   <div class="legend-layer" id="legend-lereng">
     <h4 class="legend-title">Kemiringan Lereng</h4>
@@ -424,14 +426,20 @@ body.sidebar-collapsed #map{ left:0 !important; width:100% !important; }
   </div>
 
   <!-- Batas Administrasi -->
-  <h4 class="legend-title">Batas Administrasi</h4>
-  <div class="legend-item">
-    <span class="swatch-line" style="border-top:3px solid black"></span> Batas Kapanewon
-  </div>
-  <div class="legend-item">
-    <span class="swatch-line" style="border-top:3px solid yellow"></span> Batas Kabupaten
-  </div>
+<h4 class="legend-title">Batas Administrasi</h4>
 
+<div class="legend-layer" id="legend-admin">
+  <div class="legend-item">
+    <span class="swatch-line" style="border-top:3px solid black"></span> 
+    Batas Kapanewon/Kemantren
+  </div>
+</div>
+
+<div class="legend-layer" id="legend-kabupaten">
+  <div class="legend-item">
+    <span class="swatch-line" style="border-top:3px solid yellow"></span> 
+    Batas Kabupaten/Kota
+  </div>
 </div>
 
   <!-- Basemap panel (kanan-atas) -->
@@ -786,7 +794,7 @@ fetch("kabupaten.geojson")
       style: { color: '#f7ee9e', weight: 5, fillOpacity: 0 },
       onEachFeature: (feature, layer) => {
         let html = '<div style="text-align:center;font-size:14px;">' +
-                   '<h3 style="margin:0 0 5px;">Detail Kabupaten</h3>';
+                   '<h3 style="margin:0 0 5px;">Detail Kabupaten/Kota</h3>';
         for (const k in feature.properties) {
           html += `<b>${k}:</b> ${feature.properties[k]}<br>`;
         }
@@ -805,7 +813,7 @@ fetch("admin.geojson")
       style: { color: '#000000ff', weight: 1, fillOpacity: 0 },
       onEachFeature: (feature, layer) => {
         let html = '<div style="text-align:center;font-size:14px;">' +
-                   '<h3 style="margin:0 0 5px;">Detail Kapanewon</h3>';
+                   '<h3 style="margin:0 0 5px;">Detail Kapanewon/Kemantren</h3>';
         for (const k in feature.properties) {
           html += `<b>${k}:</b> ${feature.properties[k]}<br>`;
         }
@@ -885,18 +893,28 @@ const overlayLayers = {
   });
 });
 
+
     // Thematic select (show only selected)
-    const thematicSelect = document.getElementById('thematic-select');
-thematicSelect.addEventListener('change', e=>{
+const thematicSelect = document.getElementById('thematic-select');
+thematicSelect.addEventListener('change', e => {
   const selected = e.target.value;
-  // hide semua layer dulu
-  Object.values(overlayLayers).forEach(layer => map.removeLayer(layer));
-  // Nyalakan yang dipilih
-  if(overlayLayers[selected]) {
+
+  // 1. Matikan semua layer & uncheck semua checkbox
+  Object.keys(overlayLayers).forEach(id => {
+    map.removeLayer(overlayLayers[id]);
+    const cb = document.getElementById(id);
+    if (cb) cb.checked = false;
+  });
+
+  // 2. Nyalakan layer yang dipilih & centang checkboxnya
+  if (overlayLayers[selected]) {
     map.addLayer(overlayLayers[selected]);
-    document.getElementById(selected).checked = true; // sync ke checkbox
+    const cb = document.getElementById(selected);
+    if (cb) cb.checked = true;
   }
-  updateLegend(); // update legend otomatis
+
+  // 3. Update legend biar sinkron
+  updateLegend();
 });
 
     /* ================= THEME TOGGLE ================= */
@@ -998,26 +1016,26 @@ sidebar.addEventListener('transitionend', ()=> map.invalidateSize());
     /* ================= LEGEND PANEL ================= */
     // Mapping legend ID ke overlay layer ID
 const legendMapping = {
-  bahayabanjir: null,   // legend umum, skip
-  kebanjir: null,
+  bahayabanjir: 'legend-bahayabanjir',   // legend umum, skip
+  kebanjir: 'legend-kebanjir',
   curahhujan: 'legend-curahhujan',
   kerapatansungai: 'legend-kerapatansungai',
   jarakdarisungai: 'legend-jarakdarisungai',
   jenistanah: 'legend-jenistanah',
   gunalahan: 'legend-gunalahan',
   lereng: 'legend-lereng',
-  admin: null,
-  kabupaten: null
+  admin: 'legend-admin',
+  kabupaten: 'legend-kabupaten'
 };
 
 // Fungsi update legend
 function updateLegend() {
   Object.keys(legendMapping).forEach(layerId => {
     const legendId = legendMapping[layerId];
-    if (!legendId) return; // skip jika legend tidak ada
+    if (!legendId) return;
     const legendElem = document.getElementById(legendId);
-    const layerCheckbox = document.getElementById(layerId);
-    if (layerCheckbox.checked && map.hasLayer(overlayLayers[layerId])) {
+
+    if (map.hasLayer(overlayLayers[layerId])) {
       legendElem.classList.remove('hidden');
     } else {
       legendElem.classList.add('hidden');
@@ -1160,7 +1178,11 @@ function applyFilter(showAll = false) {
       if (endDate && fISO > endDate) matchTanggal = false;
     }
 
-    const matchKab = !Kabupaten || f.properties?.Kabupaten === Kabupaten;
+    const matchKab =
+      !Kabupaten ||
+      (f.properties?.["Kabupaten/Kota"] &&
+        f.properties["Kabupaten/Kota"].toLowerCase().trim() === Kabupaten.toLowerCase().trim());
+
 
     if (matchJenis && matchTanggal && matchKab) {
       item.marker.addTo(kebanjirLayer);
