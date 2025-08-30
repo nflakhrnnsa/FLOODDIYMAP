@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Analisis Bahaya Banjir DIY — Tabel & Grafik Sub-Parameter</title>
+
+  <!-- jQuery + DataTables -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
+  <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+
+  <!-- PapaParse (CSV) -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#0b1f2e;
+      --card:#0f2d44;
+      --muted:#b9d6ff;
+      --text:#f5f9ff;
+      --accent:#6ec1ff;
+      --border:#1f415c;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: linear-gradient(180deg, #0b1f2e 0%, #09304a 100%);
+      color:var(--text);
+      padding:24px;
+    }
+    h1{
+      margin:0 0 18px 0;
+      font-weight:700;
+      letter-spacing:.3px;
+      text-align:center;
+    }
+    .subtle{color:var(--muted); font-size:.95rem; text-align:center; margin-top:4px;}
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.25);
+    }
+
+    .stack{display:grid; gap:16px;}
+
+    .filters{
+      display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:center;
+    }
+    .control{
+      display:flex; align-items:center; gap:8px; background:#0c3856; border:1px solid var(--border);
+      padding:8px 12px; border-radius:10px; color:var(--text);
+    }
+    .control label{font-size:.9rem; color:var(--muted)}
+    select{
+      appearance:none; background:#0a2a41; color:var(--text);
+      border:1px solid var(--border); padding:8px 10px; border-radius:8px;
+    }
+
+    /* DataTables theming */
+    table.dataTable{background:#0a263b; color:var(--text); border-radius:10px; overflow:hidden;}
+    .dataTables_wrapper .dataTables_filter input,
+    .dataTables_wrapper .dataTables_length select{
+      background:#0a2a41; color:var(--text); border:1px solid var(--border); border-radius:8px; padding:6px 8px;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button{
+      color:var(--text) !important; border:1px solid var(--border) !important; background:#0a2a41 !important;
+      border-radius:8px !important; margin:2px !important;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current{
+      background:var(--accent) !important; color:#00223a !important; border-color:transparent !important;
+    }
+    th{background:#0c3856 !important;}
+
+    .chartCard{padding:16px}
+    canvas{background:#082235; border-radius:12px; padding:10px; border:1px solid var(--border)}
+
+    .legendNote{font-size:.9rem; color:var(--muted); text-align:center; margin-top:8px;}
+    .detailCard{padding:0}
+    .detailHeader{
+      padding:12px 16px; border-bottom:1px solid var(--border); background:#0c3856; border-radius:12px 12px 0 0;
+      font-weight:600;
+    }
+    #detailTable{width:100%; border-collapse:collapse}
+    #detailTable th, #detailTable td{padding:10px 12px; border-bottom:1px solid var(--border); text-align:left}
+    #detailTable tr:hover{background:#0a2e49}
+    .swatch{display:inline-block; width:12px; height:12px; border-radius:3px; vertical-align:middle; margin-right:8px; border:1px solid #0004}
+    .empty{padding:14px 16px; color:var(--muted)}
+  </style>
+</head>
+<body>
+  <h1>Analisis Bahaya Banjir DIY</h1>
+  <div class="subtle">Tabel atribut & visualisasi grouped-stacked berdasarkan <em>Kelas Bahaya Banjir</em> (Rendah, Sedang, Tinggi) dengan tumpukan <em>sub-parameter</em>.</div>
+
+  <div class="stack" style="max-width:1200px; margin:18px auto;">
+    <!-- ==== TABEL + FILTER ==== -->
+    <div class="card">
+      <div class="filters" style="margin-bottom:10px">
+        <div class="control">
+          <label for="filterKec">Filter Kapanewon/Kemantren</label>
+          <select id="filterKec"></select>
+        </div>
+        <div class="control">
+          <label for="filterKelas">Filter Kelas Banjir</label>
+          <select id="filterKelas">
+            <option value="">Semua</option>
+            <option value="Rendah">Rendah</option>
+            <option value="Sedang">Sedang</option>
+            <option value="Tinggi">Tinggi</option>
+          </select>
+        </div>
+      </div>
+      <table id="banjirTable" class="display" style="width:100%">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Penggunaan Lahan</th>
+            <th>Kerapatan Sungai</th>
+            <th>Jenis Tanah</th>
+            <th>Jarak dari Sungai</th>
+            <th>Curah Hujan</th>
+            <th>Kemiringa Lereng</th>
+            <th>Kelas Banjir</th>
+            <th>Kapanewon/Kemantren</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="subtle" style="margin-top:8px">Cari di kotak “Search” kanan atas • Pilih halaman 10, 20, 30, 40, 50, 100 baris.</div>
+    </div>
+
+    <!-- ==== GRAFIK + DROPDOWN KHUSUS GRAFIK ==== -->
+    <div class="card chartCard">
+      <div class="filters" style="justify-content:flex-start; margin-bottom:10px">
+        <div class="control">
+          <label for="chartKec">Grafik untuk Kapanewon/Kemantren</label>
+          <select id="chartKec"></select>
+        </div>
+      </div>
+      <canvas id="banjirChart" style="max-height:400px;"></canvas>
+      <div class="legendNote">Tip: Klik salah satu bar pada grafik untuk melihat rincian <b>sub-parameter</b> di bawah.</div>
+    </div>
+
+    <!-- ==== DETAIL SUB-PARAMETER ==== -->
+    <div class="card detailCard">
+      <div id="detailHeader" class="detailHeader">Detail Sub-Parameter (klik bar pada grafik)</div>
+      <div id="detailEmpty" class="empty">Belum ada pilihan. Klik salah satu bar pada grafik untuk melihat rincian.</div>
+      <table id="detailTable" style="display:none">
+        <thead>
+          <tr>
+            <th>Sub-Parameter</th>
+            <th>Jumlah</th>
+            <th>Persentase</th>
+          </tr>
+        </thead>
+        <tbody id="detailBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // ===== Konfigurasi kolom & grup =====
+    const COLS = {
+      no: "No",
+      lahan: "Penggunaan Lahan",
+      kerapatan: "Kerapatan Sungai",
+      tanah: "Jenis Tanah",
+      jarak: "Jarak dari Sungai",
+      hujan: "Curah Hujan",
+      lereng: "Kemiringa Lereng", // mengikuti header CSV (typo bawaan)
+      kelas: "Kelas Banjir",
+      kec: "Kapanewon/Kemantren"
+    };
+    const KELAS = ["Rendah","Sedang","Tinggi"];
+
+    // Definisi parameter (nama + hue dasar untuk warna)
+    const PARAMS = [
+      {key: COLS.lahan,  label:"Penggunaan Lahan", hue:140},
+      {key: COLS.lereng, label:"Kemiringan Lereng", hue:28},
+      {key: COLS.tanah,  label:"Jenis Tanah", hue:280},
+      {key: COLS.hujan,  label:"Curah Hujan", hue:210},
+      {key: COLS.jarak,  label:"Jarak dari Sungai", hue:25},
+      {key: COLS.kerapatan, label:"Kerapatan Sungai", hue:200}
+    ];
+
+    let raw = [];       // data CSV asli (array objek)
+    let table = null;   // instance DataTable
+    let chart = null;   // instance Chart.js
+
+    // ====== Utils ======
+    const hsl = (h,s,l,a=1)=>`hsla(${h},${s}%,${l}%,${a})`;
+
+    function getUnique(arr){
+      const s = new Set();
+      arr.forEach(v => { if(v!==undefined && v!==null && String(v).trim()!=="") s.add(String(v).trim()); });
+      return Array.from(s);
+    }
+
+    function groupCount(rows, byKey, where={}){
+      // where: { [key]: value } filter sederhana
+      const map = new Map();
+      rows.forEach(r=>{
+        for(const [k,v] of Object.entries(where)){
+          if(String(r[k]).trim() !== String(v).trim()) return;
+        }
+        const key = String(r[byKey] ?? "").trim() || "(Tidak diketahui)";
+        map.set(key, (map.get(key)||0) + 1);
+      });
+      return map; // Map(subValue -> count)
+    }
+
+    // Ambil warna turunan per-sub berdasarkan hue parameter
+    function colorScale(baseHue, idx, total){
+      // variasi lightness berdasarkan urutan sub-parameter
+      const l = 65 - Math.min(30, (idx * (38/(Math.max(1,total-1)))));
+      const s = 70;
+      return hsl(baseHue, s, Math.round(l));
+    }
+
+    // ====== Load CSV ======
+    Papa.parse("atributbanjir.csv", {
+      download:true,
+      header:true,
+      skipEmptyLines: "greedy",
+      transformHeader: h => (h || "").trim(),
+      transform: v => (typeof v === "string" ? v.trim() : v),
+      complete: (res)=>{
+        // buang baris kosong (tanpa kecamatan)
+        raw = res.data.filter(r => r[COLS.kec] && r[COLS.kec].trim() !== "");
+        initTable(raw);
+        initFilters(raw);
+        initChartDropdown(raw);
+        renderChartForKec(document.getElementById("chartKec").value);
+      }
+    });
+
+    // ====== DataTable ======
+    function initTable(data){
+      table = $("#banjirTable").DataTable({
+        data,
+        deferRender:true,
+        pageLength:10,
+        lengthMenu:[10,20,30,40,50,100],
+        columns:[
+          { data: COLS.no, title:"No" },
+          { data: COLS.lahan, title:"Penggunaan Lahan" },
+          { data: COLS.kerapatan, title:"Kerapatan Sungai" },
+          { data: COLS.tanah, title:"Jenis Tanah" },
+          { data: COLS.jarak, title:"Jarak dari Sungai" },
+          { data: COLS.hujan, title:"Curah Hujan" },
+          { data: COLS.lereng, title:"Kemiringan Lereng" },
+          { data: COLS.kelas, title:"Kelas Banjir" },
+          { data: COLS.kec, title:"Kapanewon/Kemantren" }
+        ]
+      });
+
+      // Filter dropdown tabel
+      $("#filterKec").on("change", function(){
+        table.column(8).search(this.value).draw(); // kolom ke-9
+      });
+      $("#filterKelas").on("change", function(){
+        table.column(7).search(this.value).draw(); // kolom ke-8
+      });
+    }
+
+    function initFilters(data){
+      // isi opsi kecamatan untuk filter TABEL
+      const listKec = getUnique(data.map(d=>d[COLS.kec])).sort((a,b)=>a.localeCompare(b,'id'));
+      const sel = document.getElementById("filterKec");
+      sel.innerHTML = `<option value="">Semua</option>` + listKec.map(k=>`<option value="${k}">${k}</option>`).join("");
+    }
+
+    // ====== Dropdown khusus grafik ======
+    function initChartDropdown(data){
+      const listKec = getUnique(data.map(d=>d[COLS.kec])).sort((a,b)=>a.localeCompare(b,'id'));
+      const sel = document.getElementById("chartKec");
+      sel.innerHTML = `<option value="">Semua</option>` + listKec.map(k=>`<option value="${k}">${k}</option>`).join("");
+      sel.addEventListener("change", ()=> renderChartForKec(sel.value));
+    }
+
+    // ====== Bangun dataset Grouped + Stacked (stack per-parameter, isi = sub-parameter) ======
+    function buildGroupedStackDatasets(rows){
+      const datasets = [];
+      PARAMS.forEach((p, pIdx)=>{
+        // daftar sub-parameter yang ada pada data terfilter
+        const subs = getUnique(rows.map(r=>r[p.key]));
+        // urutkan sub berdasarkan total keseluruhan (biar konsisten)
+        const totalPerSub = subs.map(s=>({
+          sub: s,
+          total: rows.filter(r=> (r[p.key]||"").trim()===s).length
+        })).sort((a,b)=> b.total - a.total);
+
+        totalPerSub.forEach((obj, sIdx)=>{
+          const dataForClasses = KELAS.map(kls => rows.filter(r =>
+            String(r[COLS.kelas]).trim()===kls && String(r[p.key]||"").trim()===obj.sub
+          ).length);
+
+          datasets.push({
+            label: `${p.label}: ${obj.sub}`,
+            stack: p.label,                   // <== grup stack per-parameter
+            data: dataForClasses,
+            backgroundColor: colorScale(p.hue, sIdx, Math.max(1,totalPerSub.length)),
+            borderColor: "#00000020",
+            borderWidth: 1
+          });
+        });
+      });
+      return datasets;
+    }
+
+    function renderChartForKec(kecValue){
+      // filter sumber data untuk grafik khusus dropdown grafik
+      const chartRows = kecValue ? raw.filter(r => String(r[COLS.kec]).trim()===kecValue) : raw;
+
+      // bangun datasets grouped-stack (tiap parameter punya beberapa dataset = sub-parameter)
+      const datasets = buildGroupedStackDatasets(chartRows);
+
+      // hancurkan chart lama
+      if(chart) chart.destroy();
+
+      chart = new Chart(document.getElementById("banjirChart"), {
+        type: "bar",
+        data: { labels: KELAS, datasets },
+        options: {
+          responsive:true,
+          maintainAspectRatio:false,
+          interaction:{ mode: 'nearest', intersect: true },
+          plugins:{
+            legend:{ display:false }, // legend bisa terlalu panjang; detail muncul saat klik
+            tooltip:{
+              callbacks:{
+                title: (ctx)=> `Kelas: ${ctx[0].label}`,
+                label: (ctx)=>{
+                  const ds = ctx.dataset;
+                  const stackName = ds.stack; // nama parameter
+                  const kelasIndex = ctx.dataIndex;
+                  // jumlah stack (total semua sub dari parameter tsb pada kelas yang sama)
+                  let stackSum = 0;
+                  ctx.chart.data.datasets.forEach(d=>{
+                    if(d.stack===stackName) stackSum += (d.data[kelasIndex]||0);
+                  });
+                  const val = ctx.raw || 0;
+                  const pct = stackSum>0 ? (val/stackSum*100).toFixed(1)+"%" : "0%";
+                  return `${ds.label} — ${val} (${pct} dari ${stackName})`;
+                }
+              }
+            }
+          },
+          scales:{
+            x:{ stacked:true, grid:{ color:"#ffffff14" } },
+            y:{ stacked:true, beginAtZero:true, grid:{ color:"#ffffff14" }, suggestedMax: 50 }
+          },
+          onClick: (evt, elements)=>{
+            if(!elements.length) return;
+            const el = elements[0];
+            const ds = chart.data.datasets[el.datasetIndex];
+            const kelas = chart.data.labels[el.index];                  // Rendah/Sedang/Tinggi
+            const paramLabel = ds.stack;                                // nama parameter
+            const paramDef = PARAMS.find(p=>p.label===paramLabel);
+            if(!paramDef) return;
+            showDetail(chartRows, paramDef, kelas);
+          }
+        }
+      });
+
+      // reset panel detail saat ganti grafik
+      resetDetail();
+    }
+
+    // ====== Panel detail sub-parameter ======
+    function resetDetail(){
+      document.getElementById("detailHeader").textContent = "Detail Sub-Parameter (klik bar pada grafik)";
+      document.getElementById("detailTable").style.display = "none";
+      document.getElementById("detailEmpty").style.display = "block";
+      document.getElementById("detailBody").innerHTML = "";
+    }
+
+    function showDetail(rows, paramDef, kelas){
+      // filter berdasar kelas
+      const rowsKelas = rows.filter(r => String(r[COLS.kelas]).trim()===kelas);
+
+      // hitung distribusi sub-parameter untuk parameter terpilih
+      const cntMap = groupCount(rowsKelas, paramDef.key);
+      const total = Array.from(cntMap.values()).reduce((a,b)=>a+b,0);
+
+      // susun untuk tabel
+      const pairs = Array.from(cntMap.entries()).sort((a,b)=> b[1]-a[1]);
+
+      // Render header + isi
+      document.getElementById("detailHeader").textContent = `Detail Sub-Parameter — ${paramDef.label} • Kelas ${kelas}`;
+      const tbody = document.getElementById("detailBody");
+      tbody.innerHTML = "";
+      pairs.forEach(([sub, val], idx)=>{
+        // cari warna sama seperti di chart (berdasar urutan sub), rekalkulasi indexnya
+        // untuk konsistensi, kita bangun ulang urutan sub seperti saat datasets dibuat:
+        const subsAll = getUnique(rows.map(r=>r[paramDef.key]));
+        const ordered = subsAll.map(s=>({
+          sub:s,
+          total: rows.filter(r=>(r[paramDef.key]||"").trim()===s).length
+        })).sort((a,b)=> b.total - a.total);
+        const sIndex = ordered.findIndex(o=>o.sub===sub);
+        const color = colorScale(paramDef.hue, Math.max(0,sIndex), Math.max(1, ordered.length));
+
+        const pct = total>0 ? (val/total*100).toFixed(1)+"%" : "0%";
+        const name = sub || "(Tidak diketahui)";
+        tbody.insertAdjacentHTML("beforeend",
+          `<tr>
+            <td><span class="swatch" style="background:${color}"></span>${name}</td>
+            <td>${val}</td>
+            <td>${pct}</td>
+          </tr>`
+        );
+      });
+
+      document.getElementById("detailEmpty").style.display = "none";
+      document.getElementById("detailTable").style.display = "table";
+    }
+  </script>
+</body>
+</html>
