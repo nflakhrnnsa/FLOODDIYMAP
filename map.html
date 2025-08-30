@@ -280,7 +280,13 @@ body.sidebar-collapsed #map{ left:0 !important; width:100% !important; }
 </div>
 
     <!-- Grafik -->
-    <button id="show-chart" class="btn btn-secondary">Tampilkan Grafik 📊</button>
+    <button id="show-chart" class="btn btn-secondary">Tampilkan Grafik Kejadian 📊</button>
+     <!-- Tambahan tombol link ke coba2.html -->
+  <div style="text-align:center; margin-top:14px">
+    <button id="goto-analisis" class="btn btn-primary">
+      Tampilkan Analisis Bahaya Banjir 🌊 
+    </button>
+  </div>
 
     <!-- Thematic -->
     <div class="card">
@@ -1271,6 +1277,10 @@ document.getElementById("reset-filter").addEventListener("click", () => {
     document.getElementById('close-canvas').addEventListener('click', ()=>{
       canvasPanel.classList.add('hidden');
     });
+    // tombol menuju coba2.html
+document.getElementById('goto-analisis').addEventListener('click', ()=>{
+  window.location.href = "coba2.html";  // arahkan ke file coba2.html
+});
 
     // Safety on window resize
     window.addEventListener('resize', ()=> setTimeout(()=>map.invalidateSize(),150));
