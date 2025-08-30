@@ -450,14 +450,14 @@ body.sidebar-collapsed #map{ left:0 !important; width:100% !important; }
 
 <div class="legend-layer" id="legend-admin">
   <div class="legend-item">
-    <span class="swatch-line" style="border-top:3px solid black"></span> 
+    <span class="swatch-line" style="border-top:3px dashed black"></span> 
     Batas Kapanewon/Kemantren
   </div>
 </div>
 
 <div class="legend-layer" id="legend-kabupaten">
   <div class="legend-item">
-    <span class="swatch-line" style="border-top:3px solid yellow"></span> 
+    <span class="swatch-line" style="border-top:3px dashed rgb(56, 37, 223)"></span> 
     Batas Kabupaten/Kota
   </div>
 </div>
@@ -792,7 +792,7 @@ fetch("kabupaten.geojson")
   .then(kabupatenData => {
     const kabupatenLayerGeo = L.geoJSON(kabupatenData, {
       pane: 'kabupatenPane',
-      style: { color: '#f7ee9e', weight: 5, fillOpacity: 0 },
+      style: { color: '#3825df', weight: 2, fillOpacity: 0, dashArray: '6 4'},
       onEachFeature: (feature, layer) => {
         let html = '<div style="text-align:center;font-size:14px;">' +
                    '<h3 style="margin:0 0 5px;">Detail Kabupaten/Kota</h3>';
@@ -811,7 +811,7 @@ fetch("admin.geojson")
   .then(adminData => {
     const adminLayerGeo = L.geoJSON(adminData, {
       pane: 'adminPane',
-      style: { color: '#000000ff', weight: 1, fillOpacity: 0 },
+      style: { color: '#000000ff', weight: 1, fillOpacity: 0, dashArray: '4 3' },
       onEachFeature: (feature, layer) => {
         let html = '<div style="text-align:center;font-size:14px;">' +
                    '<h3 style="margin:0 0 5px;">Detail Kapanewon/Kemantren</h3>';
