@@ -344,6 +344,26 @@ body.sidebar-collapsed #map{ left:0 !important; width:100% !important; }
     <button id="btn-mypos"  class="map-btn">📍</button>
     <button id="btn-legend" class="map-btn">📑</button>
   </div>
+  <!-- Basemap panel (kanan-atas) -->
+  <div id="basemap-panel" class="basemap-panel hidden">
+    <div class="bm-row"><input type="radio" name="bm" value="osm" checked/> OpenStreetMap</div>
+    <div class="bm-row"><input type="radio" name="bm" value="dark"/> Dark Mode</div>
+    <div class="bm-row"><input type="radio" name="bm" value="satellite"/> Satellite</div>
+    <div class="bm-row"><input type="radio" name="bm" value="positron"/> Positron</div>
+    <div class="bm-row"><input type="radio" name="bm" value="toner"/> Stamen Toner Lite</div>
+    <div class="bm-row"><input type="radio" name="bm" value="voyager"/> CARTO Voyager</div>
+  </div>
+
+  <!-- CHART PANEL -->
+  <div id="canvas-panel" class="canvas-panel hidden">
+    <button id="close-canvas" class="canvas-close">X</button>
+    <div class="canvas-title">Analisis Data Banjir</div>
+    <div class="chart-title">Distribusi Jenis Banjir</div>
+    <div class="chart-box"><canvas id="chart-jenis"></canvas></div>
+
+    <div class="chart-title" style="margin-top:8px">Trend Kejadian Banjir per Bulan</div>
+    <div class="chart-box"><canvas id="chart-bulanan"></canvas></div>
+  </div>
 
   <!-- Legend panel -->
 <div id="legend-panel" class="legend-panel hidden">
@@ -442,26 +462,7 @@ body.sidebar-collapsed #map{ left:0 !important; width:100% !important; }
   </div>
 </div>
 
-  <!-- Basemap panel (kanan-atas) -->
-  <div id="basemap-panel" class="basemap-panel hidden">
-    <div class="bm-row"><input type="radio" name="bm" value="osm" checked/> OpenStreetMap</div>
-    <div class="bm-row"><input type="radio" name="bm" value="dark"/> Dark Mode</div>
-    <div class="bm-row"><input type="radio" name="bm" value="satellite"/> Satellite</div>
-    <div class="bm-row"><input type="radio" name="bm" value="positron"/> Positron</div>
-    <div class="bm-row"><input type="radio" name="bm" value="toner"/> Stamen Toner Lite</div>
-    <div class="bm-row"><input type="radio" name="bm" value="voyager"/> CARTO Voyager</div>
-  </div>
-
-  <!-- CHART PANEL -->
-  <div id="canvas-panel" class="canvas-panel hidden">
-    <button id="close-canvas" class="canvas-close">X</button>
-    <div class="canvas-title">Analisis Data Banjir</div>
-    <div class="chart-title">Distribusi Jenis Banjir</div>
-    <div class="chart-box"><canvas id="chart-jenis"></canvas></div>
-
-    <div class="chart-title" style="margin-top:8px">Trend Kejadian Banjir per Bulan</div>
-    <div class="chart-box"><canvas id="chart-bulanan"></canvas></div>
-  </div>
+  
 
   <!-- Leaflet + Chart.js -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
