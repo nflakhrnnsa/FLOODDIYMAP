@@ -280,6 +280,7 @@ body.sidebar-collapsed #map{ left:0 !important; width:100% !important; }
 </div>
 
     <!-- Grafik -->
+   <h3>Analisis Data</h3>
     <button id="show-chart" class="btn btn-secondary">Tampilkan Grafik Kejadian 📊</button>
      <!-- Tambahan tombol link ke coba2.html -->
   <div style="text-align:center; margin-top:14px">
@@ -570,7 +571,7 @@ const lerengLayerGeo = L.geoJSON(lerengData, {
       weight: 0,                  // hapus outline
       color: 'transparent',       // garis transparan
       fillColor: warna6[kelas6] || '#ccc',
-      fillOpacity: .7
+      fillOpacity: .5
     };
   },
   onEachFeature:(feature, layer)=>{
@@ -606,7 +607,7 @@ fetch("gunalahan.geojson")
       weight: 0,                  // hapus outline
       color: 'transparent',       // garis transparan
       fillColor: warna5[kelas5] || '#ccc',
-      fillOpacity: .7
+      fillOpacity: .5
     };
   },
   onEachFeature:(feature, layer)=>{
@@ -642,7 +643,7 @@ fetch("jenistanah.geojson")
       weight: 0,                  // hapus outline
       color: 'transparent',       // garis transparan
       fillColor: warna4[kelas4] || '#ccc',
-      fillOpacity: .7
+      fillOpacity: .5
     };
   },
   onEachFeature:(feature, layer)=>{
@@ -676,7 +677,7 @@ fetch("jenistanah.geojson")
       weight: 0,                  // hapus outline
       color: 'transparent',       // garis transparan
       fillColor: warna2[kelas2] || '#ccc',
-      fillOpacity: .9
+      fillOpacity: .5
     };
   },
   onEachFeature:(feature, layer)=>{
@@ -710,7 +711,7 @@ fetch("curahhujan.geojson")
       weight: 0,                  // hapus outline
       color: 'transparent',       // garis transparan
       fillColor: warna1[kelas1] || '#ccc',
-      fillOpacity: .7
+      fillOpacity: .5
     };
   },
   onEachFeature:(feature, layer)=>{
@@ -744,7 +745,7 @@ fetch("kerapatansungai.geojson")
       weight: 0,                  // hapus outline
       color: 'transparent',       // garis transparan
       fillColor: warna3[kelas3] || '#ccc',
-      fillOpacity: .7
+      fillOpacity: .5
     };
   },
   onEachFeature:(feature, layer)=>{
