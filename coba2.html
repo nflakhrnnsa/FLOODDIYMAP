@@ -126,7 +126,7 @@
             <th>Jenis Tanah</th>
             <th>Jarak dari Sungai</th>
             <th>Curah Hujan</th>
-            <th>Kemiringa Lereng</th>
+            <th>Kemiringan Lereng</th>
             <th>Kelas Banjir</th>
             <th>Kapanewon/Kemantren</th>
           </tr>
@@ -174,7 +174,7 @@
       tanah: "Jenis Tanah",
       jarak: "Jarak dari Sungai",
       hujan: "Curah Hujan",
-      lereng: "Kemiringa Lereng", // mengikuti header CSV (typo bawaan)
+      lereng: "Kemiringan Lereng",
       kelas: "Kelas Banjir",
       kec: "Kapanewon/Kemantren"
     };
@@ -225,7 +225,7 @@
     }
 
     // ====== Load CSV ======
-    Papa.parse("atributbanjir.csv", {
+    Papa.parse("atributbanjirfix.csv", {
       download:true,
       header:true,
       skipEmptyLines: "greedy",
@@ -425,3 +425,4 @@
   </script>
 </body>
 </html>
+
